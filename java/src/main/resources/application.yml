@@ -1,10 +1,10 @@
 spring:
   datasource:
-    # IMPORTANT: Remplacer par votre connection string Neon après création du compte
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/brasilburger?sslmode=require}
+    # Neon PostgreSQL Database
+    url: jdbc:postgresql://ep-solitary-bread-a4ilfngv-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require
     driverClassName: org.postgresql.Driver
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:}
+    username: neondb_owner
+    password: npg_B48ZgFWfClir
   
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect

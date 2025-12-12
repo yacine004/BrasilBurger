@@ -14,10 +14,17 @@
 
 | Composant | Tech | Port | Status |
 |-----------|------|------|--------|
-| **REST API** | Java Spring Boot 3.3.6 | 8080 | ✅ DONE |
-| **Web Client** | C# ASP.NET MVC | 3000 | ⏳ TODO |
-| **Admin Backend** | Symfony 6.4 | 8000 | ⏳ TODO |
-| **Database** | SQL Server 2019+ | 1433 | ✅ DONE |
+| **REST API** | Java Spring Boot 3.3.6 | 8080 | ✅ OPÉRATIONNEL |
+| **Web Client** | C# ASP.NET MVC | 5190 | 🔄 EN COURS |
+| **Admin Backend** | Symfony 6.4 | 8001 | 🔄 EN COURS |
+| **Database** | PostgreSQL (Neon) | 5432 | ✅ OPÉRATIONNEL |
+| **Storage Images** | Cloudinary | - | 📋 À CONFIGURER |
+
+## 🌐 URLs Déployées
+
+- **API Java Production** : `https://brasilburger-api-java.onrender.com` (à déployer)
+- **GitHub Repository** : https://github.com/yacine004/BrasilBurger
+- **Database Neon** : `ep-empty-fire-adg2yddb-pooler.c-2.us-east-1.aws.neon.tech`
 
 ## 📋 Structure
 

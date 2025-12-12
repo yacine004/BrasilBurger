@@ -1,0 +1,127 @@
+@startuml mld
+!theme plain
+
+' ==========================================================================
+'          MLD basé sur le script SQL Brasil Burger (Neon, PostgreSQL)
+' ==========================================================================
+
+entity users {
+  *id : serial
+  --
+  username : varchar(50)
+  email : varchar(100)
+  password_hash : varchar(255)
+  role : varchar(20)
+  is_active : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity clients {
+  *id : serial
+  --
+  user_id : int
+  first_name : varchar(50)
+  last_name : varchar(50)
+  phone : varchar(20)
+  address : text
+  city : varchar(50)
+  postal_code : varchar(10)
+  loyalty_points : int
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity burgers {
+  *id : serial
+  --
+  name : varchar(100)
+  description : text
+  base_price : decimal(10,2)
+  image_url : varchar(255)
+  bread_type : varchar(50)
+  meat_type : varchar(50)
+  is_vegetarian : boolean
+  is_available : boolean
+  spicy_level : int
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity complements {
+  *id : serial
+  --
+  name : varchar(100)
+  description : text
+  price : decimal(10,2)
+  type : varchar(50)
+  image_url : varchar(255)
+  is_available : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity menus {
+  *id : serial
+  --
+  name : varchar(100)
+  description : text
+  price : decimal(10,2)
+  image_url : varchar(255)
+  category : varchar(50)
+  is_available : boolean
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity burger_complements {
+  *id : serial
+  --
+  burger_id : int
+  complement_id : int
+  quantity : int
+}
+
+entity orders {
+  *id : serial
+  --
+  client_id : int
+  order_date : timestamp
+  status : varchar(20)
+  total_amount : decimal(10,2)
+  payment_method : varchar(50)
+  payment_status : varchar(20)
+  delivery_address : text
+  delivery_type : varchar(20)
+  notes : text
+  created_at : timestamp
+  updated_at : timestamp
+}
+
+entity order_lines {
+  *id : serial
+  --
+  order_id : int
+  item_type : varchar(20)
+  item_id : int
+  item_name : varchar(100)
+  quantity : int
+  unit_price : decimal(10,2)
+  subtotal : decimal(10,2)
+  notes : text
+  created_at : timestamp
+}
+
+' ============================
+'        RELATIONS
+' ============================
+
+users ||--|| clients : "1 - 1"
+clients ||--o{ orders : "1 - N"
+
+orders ||--o{ order_lines : "1 - N"
+
+burgers ||--o{ burger_complements : "1 - N"
+complements ||--o{ burger_complements : "1 - N"
+
+@enduml

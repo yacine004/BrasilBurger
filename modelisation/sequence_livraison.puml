@@ -1,0 +1,66 @@
+@startuml sequence_livraison
+!theme plain
+title Diagramme de Séquence - Gestion de Livraison
+
+actor "Livreur" as Livreur
+participant "Système" as System
+participant "Base de Données" as DB
+actor "Client" as Client
+
+== Récupération des Commandes à Livrer ==
+Livreur -> System: Se connecter
+activate System
+System -> DB: Vérifier identifiants livreur
+activate DB
+DB --> System: Livreur authentifié
+deactivate DB
+System --> Livreur: Accès autorisé
+
+Livreur -> System: Consulter commandes en attente
+System -> DB: SELECT orders WHERE status='READY_FOR_DELIVERY'
+activate DB
+DB --> System: Liste des commandes prêtes
+deactivate DB
+System --> Livreur: Afficher liste commandes
+
+== Prise en Charge d'une Commande ==
+Livreur -> System: Sélectionner commande #123
+System -> DB: UPDATE orders SET status='IN_DELIVERY', delivery_person_id=livreur_id
+activate DB
+DB --> System: Commande mise à jour
+deactivate DB
+System --> Livreur: Commande assignée
+
+Livreur -> System: Voir détails livraison (adresse, contact)
+System -> DB: SELECT client, address, phone FROM orders
+activate DB
+DB --> System: Informations client
+deactivate DB
+System --> Livreur: Afficher adresse et contact
+
+== Livraison au Client ==
+Livreur -> Client: Se déplacer à l'adresse
+Livreur -> Client: Sonner / Appeler
+Client -> Livreur: Ouvrir la porte
+Livreur -> Client: Remettre la commande
+Client -> Livreur: Réceptionner commande
+
+== Confirmation de Livraison ==
+Livreur -> System: Confirmer livraison réussie
+System -> DB: UPDATE orders SET status='DELIVERED', delivered_at=NOW()
+activate DB
+DB --> System: Statut mis à jour
+deactivate DB
+System --> Livreur: Confirmation enregistrée
+
+System -> Client: Envoyer notification "Commande livrée"
+Client -> System: (Optionnel) Noter le service
+System -> DB: INSERT INTO ratings (order_id, rating, comment)
+activate DB
+DB --> System: Avis enregistré
+deactivate DB
+System --> Client: Merci pour votre avis
+
+deactivate System
+
+@enduml

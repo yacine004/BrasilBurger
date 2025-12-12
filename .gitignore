@@ -1,0 +1,45 @@
+# Java
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+**/config/openJdk*/
+**/config/openJdk-*/
+
+# C#
+bin/
+obj/
+*.user
+*.suo
+*.cache
+.vs/
+
+# Symfony
+/symfony/var/
+/symfony/vendor/
+/symfony/.env.local
+/symfony/.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Credentials (ne pas commit les secrets)
+CREDENTIALS.md
+CHECKLIST.md
+COMPLETION_SUMMARY.md
+DEPLOYMENT_GUIDE.md
+PHASE_*.md
+QUICK_REFERENCE.md
+START_HERE.md
+PROJET_GLOBAL.md

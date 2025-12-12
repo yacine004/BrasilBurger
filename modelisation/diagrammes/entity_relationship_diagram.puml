@@ -1,0 +1,172 @@
+@startuml entity_relationship
+title Brasil Burger - Entity Relationship Diagram (MLD)
+
+entity "CLIENT" as CLIENT {
+  *id_client (PK)
+  --
+  email (UNIQUE)
+  mot_de_passe
+  nom
+  prenom
+  telephone
+  adresse
+  statut
+  date_creation
+  date_modification
+}
+
+entity "BURGER" as BURGER {
+  *id_burger (PK)
+  --
+  nom
+  description
+  prix
+  image
+  statut
+  date_creation
+  date_modification
+}
+
+entity "MENU" as MENU {
+  *id_menu (PK)
+  --
+  nom
+  description
+  image
+  statut
+  date_creation
+  date_modification
+}
+
+entity "MENU_BURGER" as MENU_BURGER {
+  *id_menu_burger (PK)
+  --
+  id_menu (FK)
+  id_burger (FK)
+}
+
+entity "COMPLEMENT" as COMPLEMENT {
+  *id_complement (PK)
+  --
+  nom
+  prix
+  image
+  type_complement
+  statut
+  date_creation
+  date_modification
+}
+
+entity "MENU_COMPLEMENT" as MENU_COMPLEMENT {
+  *id_menu_complement (PK)
+  --
+  id_menu (FK)
+  id_complement (FK)
+}
+
+entity "COMMANDE" as COMMANDE {
+  *id_commande (PK)
+  --
+  id_client (FK)
+  date_creation
+  date_modification
+  montant_total
+  etat
+  type_livraison
+  id_zone (FK)
+  id_livreur (FK)
+  notes
+}
+
+entity "LIGNE_COMMANDE" as LIGNE_COMMANDE {
+  *id_ligne (PK)
+  --
+  id_commande (FK)
+  id_burger (FK)
+  id_menu (FK)
+  quantite
+  prix_unitaire
+  sous_total
+  date_creation
+}
+
+entity "LIGNE_COMMANDE_COMPLEMENT" as LCC {
+  *id_lcc (PK)
+  --
+  id_ligne (FK)
+  id_complement (FK)
+}
+
+entity "PAIEMENT" as PAIEMENT {
+  *id_paiement (PK)
+  --
+  id_commande (FK)
+  montant
+  methode
+  statut
+  reference
+  date_creation
+  date_modification
+}
+
+entity "ZONE" as ZONE {
+  *id_zone (PK)
+  --
+  nom_zone
+  prix_livraison
+  description
+  date_creation
+  date_modification
+}
+
+entity "ZONE_QUARTIER" as ZONE_QUARTIER {
+  *id_zone_quartier (PK)
+  --
+  id_zone (FK)
+  quartier
+}
+
+entity "LIVREUR" as LIVREUR {
+  *id_livreur (PK)
+  --
+  nom
+  prenom
+  telephone
+  id_zone (FK)
+  statut
+  date_embauche
+  date_creation
+  date_modification
+}
+
+entity "GESTIONNAIRE" as GESTIONNAIRE {
+  *id_gestionnaire (PK)
+  --
+  email (UNIQUE)
+  mot_de_passe
+  nom
+  prenom
+  role
+  statut
+  date_embauche
+  date_creation
+  date_modification
+}
+
+CLIENT ||--o{ COMMANDE : "passe"
+COMMANDE ||--o{ LIGNE_COMMANDE : "contient"
+BURGER }o--|| MENU_BURGER : "dans"
+MENU }o--|| MENU_BURGER : "contient"
+COMPLEMENT }o--|| MENU_COMPLEMENT : "dans"
+MENU }o--|| MENU_COMPLEMENT : "contient"
+LIGNE_COMMANDE }o--|| BURGER : "reference"
+LIGNE_COMMANDE }o--|| MENU : "reference"
+LIGNE_COMMANDE ||--o{ LCC : "a"
+COMPLEMENT }o--|| LCC : "dans"
+COMMANDE ||--o{ PAIEMENT : "genere"
+ZONE ||--o{ ZONE_QUARTIER : "couvre"
+ZONE ||--o{ COMMANDE : "utilisée_par"
+LIVREUR }o--|| ZONE : "travaille_dans"
+LIVREUR ||--o{ COMMANDE : "livre"
+
+@enduml

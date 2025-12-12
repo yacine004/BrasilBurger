@@ -1,0 +1,78 @@
+@startuml sequence_order_flow
+title Brasil Burger - Sequence: Flux de Commande
+
+participant Client as C
+participant "Application Mobile" as APP
+participant "API Java" as API
+participant "Database" as DB
+participant "Gestionnaire" as G
+participant "Livreur" as L
+
+C ->> APP: Consulte Catalogue
+APP ->> API: GET /api/burgers
+API ->> DB: Récupère Burgers
+DB -->> API: Liste Burgers
+API -->> APP: JSON Burgers
+APP -->> C: Affiche Menu
+
+C ->> APP: Ajoute Articles au Panier
+APP ->> APP: Calcul Total
+
+C ->> APP: Valide Commande
+APP ->> API: POST /api/commandes
+API ->> DB: Crée Commande (VALIDE)
+DB -->> API: id_commande
+API ->> DB: Crée Lignes_Commande
+API ->> DB: Crée Paiement (PENDING)
+API -->> APP: Commande Créée
+
+APP ->> C: Demande Paiement
+C ->> APP: Effectue Paiement (WAVE/OM)
+APP ->> API: PUT /api/paiements/{id}
+API ->> DB: Valide Paiement
+DB -->> API: Paiement VALIDE
+API ->> DB: Update Commande (PRETE)
+API -->> APP: Paiement Confirmé
+
+APP ->> C: Affiche Numéro Commande
+
+G ->> API: GET /api/commandes?etat=PRETE
+API ->> DB: Récupère Commandes PRETE
+DB -->> API: Liste Commandes
+API -->> G: JSON Commandes
+G ->> G: Prépare Commande
+
+G ->> API: PUT /api/commandes/{id}/etat
+API ->> DB: Update Etat=LIVREE
+DB -->> API: Success
+API -->> G: Mise à Jour OK
+
+G ->> L: Assigne Livraison
+
+L ->> APP: Accepte Livraison
+L ->> APP: Actualise Position GPS
+APP ->> API: PUT /api/commandes/{id}/localisation
+API ->> DB: Update Localisation
+
+C ->> APP: Suit Commande
+APP ->> API: GET /api/commandes/{id}
+API ->> DB: Récupère Position
+DB -->> API: Localisation Livreur
+API -->> APP: Position en Temps Réel
+APP -->> C: Affiche Position sur Carte
+
+L ->> C: Livraison Effectuée
+C ->> APP: Confirme Réception
+APP ->> API: PUT /api/commandes/{id}/etat=LIVREE
+API ->> DB: Update Etat=LIVREE
+DB -->> API: Success
+API -->> APP: Commande Livrée
+
+APP -->> C: Affiche Confirmation Livraison
+
+G ->> API: GET /api/statistiques
+API ->> DB: Calcule Stats (Revenus, Commandes, etc.)
+DB -->> API: Stats
+API -->> G: Dashboard
+
+@enduml

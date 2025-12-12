@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <h1 class="mb-4">{{ title }}</h1>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom du Burger *</label>
+                            <input type="text" id="nom" name="nom" class="form-control" value="{{ burger.nom ?? '' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control" rows="3">{{ burger.description ?? '' }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prix" class="form-label">Prix *</label>
+                            <input type="number" id="prix" name="prix" class="form-control" step="0.01" value="{{ burger.prix ?? '' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label">URL Image</label>
+                            <input type="url" id="image" name="image" class="form-control" value="{{ burger.image ?? '' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="statut" class="form-label">Statut</label>
+                            <select id="statut" name="statut" class="form-select">
+                                <option value="ACTIF" {% if (burger.statut ?? 'ACTIF') == 'ACTIF' %}selected{% endif %}>Actif</option>
+                                <option value="INACTIF" {% if (burger.statut ?? '') == 'INACTIF' %}selected{% endif %}>Inactif</option>
+                                <option value="ARCHIVE" {% if (burger.statut ?? '') == 'ARCHIVE' %}selected{% endif %}>Archivé</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <a href="{{ path('app_burger_list') }}" class="btn btn-secondary">Annuler</a>
+                            <button type="submit" class="btn text-white" style="background: var(--primary-color);">
+                                {{ mode == 'create' ? 'Créer' : 'Modifier' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

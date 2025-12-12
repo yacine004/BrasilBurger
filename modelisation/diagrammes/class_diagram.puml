@@ -1,0 +1,169 @@
+@startuml class_diagram_brasil_burger
+title Brasil Burger - Domain Class Diagram
+
+class Client {
+    - id_client: Long
+    - email: String
+    - mot_de_passe: String
+    - nom: String
+    - prenom: String
+    - telephone: String
+    - adresse: String
+    - statut: Statut (ACTIF, INACTIF)
+    - date_creation: DateTime
+    --
+    + creerCompte()
+    + seConnecter()
+    + consulterCommandes()
+    + passer Commande()
+    + modifierProfil()
+    + archiver()
+}
+
+class Burger {
+    - id_burger: Long
+    - nom: String
+    - description: String
+    - prix: BigDecimal
+    - image: String
+    - statut: Statut (ACTIF, ARCHIVE)
+    - date_creation: DateTime
+    --
+    + afficherDetails()
+    + mettreAJourPrix()
+    + archiver()
+}
+
+class Menu {
+    - id_menu: Long
+    - nom: String
+    - description: String
+    - image: String
+    - statut: Statut (ACTIF, ARCHIVE)
+    - date_creation: DateTime
+    --
+    + contientBurger(): Burger
+    + contientComplements(): List<Complement>
+    + calculerPrix()
+}
+
+class Complement {
+    - id_complement: Long
+    - nom: String
+    - prix: BigDecimal
+    - image: String
+    - type_complement: TypeComplement (FRITES, BOISSON, AUTRE)
+    - statut: Statut (ACTIF, ARCHIVE)
+    - date_creation: DateTime
+    --
+    + afficherDetails()
+    + mettreAJourPrix()
+}
+
+class Commande {
+    - id_commande: Long
+    - date_creation: DateTime
+    - montant_total: BigDecimal
+    - etat: Etat (VALIDE, PRETE, LIVREE, ANNULEE)
+    - type_livraison: TypeLivraison (SUR_PLACE, RETRAIT, LIVRAISON)
+    - notes: String
+    --
+    + calculerTotal()
+    + changerEtat()
+    + assigner Livreur()
+    + annuler()
+}
+
+class Ligne_Commande {
+    - id_ligne: Long
+    - quantite: Integer
+    - prix_unitaire: BigDecimal
+    - sous_total: BigDecimal
+    - date_creation: DateTime
+    --
+    + calculerSousTotal()
+    + mettreAJourQuantite()
+}
+
+class Paiement {
+    - id_paiement: Long
+    - montant: BigDecimal
+    - methode: Methode (WAVE, OM)
+    - statut: StatutPaiement (PENDING, VALIDE, REJETE)
+    - reference: String
+    - date_creation: DateTime
+    --
+    + validerPaiement()
+    + rejeterPaiement()
+    + traiterRemboursement()
+}
+
+class Zone {
+    - id_zone: Long
+    - nom_zone: String
+    - prix_livraison: BigDecimal
+    - description: String
+    - date_creation: DateTime
+    --
+    + couvreQuartier(): boolean
+    + calculerCout()
+}
+
+class Zone_Quartier {
+    - id_zone_quartier: Long
+    - quartier: String
+    --
+    + appartientAZone(): Zone
+}
+
+class Livreur {
+    - id_livreur: Long
+    - nom: String
+    - prenom: String
+    - telephone: String
+    - statut: Statut (ACTIF, INACTIF)
+    - date_embauche: Date
+    - date_creation: DateTime
+    --
+    + accepterLivraison()
+    + actualiserStatut()
+    + getQualifications()
+}
+
+class Gestionnaire {
+    - id_gestionnaire: Long
+    - email: String
+    - mot_de_passe: String
+    - nom: String
+    - prenom: String
+    - role: String
+    - statut: Statut (ACTIF, INACTIF)
+    - date_embauche: Date
+    - date_creation: DateTime
+    --
+    + gererBurgers()
+    + gererMenus()
+    + gererComplements()
+    + gererCommandes()
+    + gererLivreurs()
+    + consulterStatistiques()
+}
+
+Client "1" -- "*" Commande : passe
+Commande "1" -- "*" Ligne_Commande : contient
+Ligne_Commande "*" -- "1" Burger : reference
+Ligne_Commande "*" -- "1" Menu : reference
+Menu "1" -- "*" Burger : contient_1
+Menu "*" -- "*" Complement : contient_complements
+Burger "*" -- "*" Complement : peut_avoir
+Commande "1" -- "*" Paiement : genere
+Commande "*" -- "1" Zone : utilise
+Commande "*" -- "1" Livreur : assignee_a
+Zone "1" -- "*" Zone_Quartier : couvre
+Livreur "*" -- "1" Zone : travaille_dans
+Gestionnaire "1" -- "*" Burger : gere
+Gestionnaire "1" -- "*" Menu : gere
+Gestionnaire "1" -- "*" Complement : gere
+Gestionnaire "1" -- "*" Livreur : supervise
+
+@enduml

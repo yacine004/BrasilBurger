@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-4 fw-bold mb-4">Brasil Burger</h1>
+            <p class="lead text-muted mb-4">Système de gestion des commandes et des restaurants</p>
+            
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-chart-line" style="color: var(--primary-color)"></i> Tableau de bord
+                            </h5>
+                            <p class="card-text text-muted">Consultez vos statistiques et votre activité</p>
+                            <a href="{{ path('app_gestionnaire_dashboard') }}" class="btn btn-primary btn-sm">Accéder</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-hamburger" style="color: var(--primary-color)"></i> Burgers
+                            </h5>
+                            <p class="card-text text-muted">Gérez votre catalogue de burgers</p>
+                            <a href="{{ path('app_burger_list') }}" class="btn btn-primary btn-sm">Accéder</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-shopping-cart" style="color: var(--primary-color)"></i> Commandes
+                            </h5>
+                            <p class="card-text text-muted">Consultez et gérez vos commandes</p>
+                            <a href="{{ path('app_gestionnaire_commandes') }}" class="btn btn-primary btn-sm">Accéder</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

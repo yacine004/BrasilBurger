@@ -1,0 +1,56 @@
+@startuml use_case_brasil_burger
+title Brasil Burger - Use Case Diagram
+
+actor Client as C
+actor Gestionnaire as G
+actor Livreur as L
+actor System as S
+
+rectangle "Brasil Burger System" {
+    usecase "Consulter Catalogue" as UC1
+    usecase "Passer Commande" as UC2
+    usecase "Gérer Panier" as UC3
+    usecase "Suivre Commande" as UC4
+    usecase "Gérer Compte" as UC5
+    usecase "Gérer Burgers" as UC6
+    usecase "Gérer Menus" as UC7
+    usecase "Gérer Compléments" as UC8
+    usecase "Gérer Commandes" as UC9
+    usecase "Gérer Livraisons" as UC10
+    usecase "Gérer Zones" as UC11
+    usecase "Gérer Livreurs" as UC12
+    usecase "Consulter Statistiques" as UC13
+    usecase "Assigner Livraison" as UC14
+    usecase "Actualiser Statut" as UC15
+    usecase "Payer Commande" as UC16
+    usecase "Valider Paiement" as UC17
+}
+
+C --> UC1 : consulte
+C --> UC2 : crée
+C --> UC3 : modifie
+C --> UC4 : suit
+C --> UC5 : gère
+C --> UC16 : effectue
+
+G --> UC6 : crée/modifie
+G --> UC7 : crée/modifie
+G --> UC8 : crée/modifie
+G --> UC9 : valide/prépare
+G --> UC10 : gère
+G --> UC11 : configure
+G --> UC12 : embauche
+G --> UC13 : consulte
+G --> UC14 : assigne
+
+L --> UC15 : met à jour
+L --> UC14 : reçoit
+
+S --> UC17 : traite
+S --> UC4 : notifie
+
+UC2 .> UC3 : include
+UC2 .> UC16 : include
+UC9 .> UC14 : include
+
+@enduml

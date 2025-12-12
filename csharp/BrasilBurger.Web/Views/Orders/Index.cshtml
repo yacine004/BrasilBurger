@@ -1,0 +1,46 @@
+@model List<object>
+
+@{
+    ViewData["Title"] = "Mes Commandes";
+}
+
+<h1>📋 Mes Commandes</h1>
+
+@if (Model.Any())
+{
+    <div class="table-responsive mt-4">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>N° Commande</th>
+                    <th>Date</th>
+                    <th>Montant</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>#@order</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><span class="badge bg-info">En attente</span></td>
+                        <td>
+                            <a href="/" class="btn btn-sm btn-primary">Voir Détails</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info mt-4" role="alert">
+        <h4 class="alert-heading">Aucune commande</h4>
+        <p>Vous n'avez pas encore passé de commande.</p>
+        <a href="/burgers" class="btn btn-primary">🍔 Passer une Commande</a>
+    </div>
+}

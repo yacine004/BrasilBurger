@@ -1,0 +1,78 @@
+@model BrasilBurger.Web.Models.ViewModels.BurgerListViewModel
+
+@{
+    ViewData["Title"] = "Menu - Nos Burgers";
+}
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="mb-4">🍔 Notre Menu</h1>
+        
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Chercher un burger..." value="@Model.SearchTerm">
+            </div>
+            <div class="col-md-4">
+                <select name="zoneId" class="form-control">
+                    <option value="">-- Sélectionner une zone --</option>
+                    @foreach (var zone in Model.Zones)
+                    {
+                        <option value="@zone.Id" selected="@(Model.SelectedZoneId == zone.Id)">@zone.Nom</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">🔍 Rechercher</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4">
+    @if (Model.Burgers.Any())
+    {
+        @foreach (var burger in Model.Burgers)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    @if (!string.IsNullOrEmpty(burger.Image))
+                    {
+                        <img src="@burger.Image" class="card-img-top" alt="@burger.Nom" style="height: 200px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <span class="text-white font-size: 3rem;">🍔</span>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@burger.Nom</h5>
+                        <p class="card-text text-truncate">@burger.Description</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge badge-primary" style="font-size: 1.1rem;">@burger.Prix.ToString("C")</span>
+                            @if (burger.Disponible)
+                            {
+                                <span class="badge bg-success">Disponible</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Indisponible</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a href="/burgers/@burger.Id" class="btn btn-primary w-100">👀 Voir Détails</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                Aucun burger trouvé. Essayez avec d'autres critères de recherche.
+            </div>
+        </div>
+    }
+</div>

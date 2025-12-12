@@ -1,399 +1,286 @@
--- ============================================================================
--- BASE DE DONNEES - BRASIL BURGER (POSTGRESQL / NEON)
--- Système de Gestion des Commandes et Livraisons
--- ============================================================================
--- Script SQL créé le: 2025-12-12
--- PostgreSQL version: 15+
--- Plateforme cloud: Neon.tech
--- Partagé par: Java Spring Boot API, C# ASP.NET MVC, Symfony
--- ============================================================================
+-- =============================================================================
+-- Brasil Burger - Script PostgreSQL pour Neon.com
+-- Base de données: neondb
+-- Version: PostgreSQL 15
+-- Date: 12/12/2025
+-- =============================================================================
+-- IMPORTANT: Exécuter ce script sur Neon.tech en utilisant psql
+-- Connexion: psql 'postgresql://[USER]:[PASSWORD]@[HOST]/neondb?sslmode=require'
+-- =============================================================================
 
--- ============================================================================
--- 0. CONNEXION ET PREPARATION
--- ============================================================================
--- Se connecter à la base neondb (déjà créée par Neon)
--- psql 'postgresql://neondb_owner:npg_B48ZgFWfClir@ep-solitary-bread-a4ilfngv-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require'
+-- Supprimer les tables si elles existent (en respectant les dépendances)
+DROP TABLE IF EXISTS order_lines CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS burger_complements CASCADE;
+DROP TABLE IF EXISTS burgers CASCADE;
+DROP TABLE IF EXISTS complements CASCADE;
+DROP TABLE IF EXISTS menus CASCADE;
+DROP TABLE IF EXISTS clients CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
--- Supprimer les tables existantes (ordre inverse des dépendances)
-DROP TABLE IF EXISTS ligne_commande_complement CASCADE;
-DROP TABLE IF EXISTS ligne_commande CASCADE;
-DROP TABLE IF EXISTS menu_complement CASCADE;
-DROP TABLE IF EXISTS menu_burger CASCADE;
-DROP TABLE IF EXISTS paiement CASCADE;
-DROP TABLE IF EXISTS commande CASCADE;
-DROP TABLE IF EXISTS zone_quartier CASCADE;
-DROP TABLE IF EXISTS zone CASCADE;
-DROP TABLE IF EXISTS livreur CASCADE;
-DROP TABLE IF EXISTS menu CASCADE;
-DROP TABLE IF EXISTS complement CASCADE;
-DROP TABLE IF EXISTS burger CASCADE;
-DROP TABLE IF EXISTS client CASCADE;
-DROP TABLE IF EXISTS gestionnaire CASCADE;
-
--- ============================================================================
--- 1. TABLES DE BASE - UTILISATEURS
--- ============================================================================
-
--- Table GESTIONNAIRE
-CREATE TABLE gestionnaire (
-    id_gestionnaire BIGSERIAL PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    prenom VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    mot_de_passe VARCHAR(255) NOT NULL,
-    telephone VARCHAR(20),
-    date_embauche DATE NOT NULL,
-    statut VARCHAR(20) DEFAULT 'ACTIF' CHECK (statut IN ('ACTIF', 'INACTIF')),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- =============================================================================
+-- TABLE: users (Utilisateurs du système)
+-- =============================================================================
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'CLIENT',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_role CHECK (role IN ('ADMIN', 'MANAGER', 'CLIENT'))
 );
 
-CREATE INDEX idx_gestionnaire_email ON gestionnaire(email);
-CREATE INDEX idx_gestionnaire_statut ON gestionnaire(statut);
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);
 
--- Table CLIENT
-CREATE TABLE client (
-    id_client BIGSERIAL PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    prenom VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    telephone VARCHAR(20) NOT NULL,
-    mot_de_passe VARCHAR(255) NOT NULL,
-    date_inscription DATE NOT NULL,
-    adresse VARCHAR(500),
-    statut VARCHAR(20) DEFAULT 'ACTIF' CHECK (statut IN ('ACTIF', 'INACTIF')),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- =============================================================================
+-- TABLE: clients (Clients du restaurant)
+-- =============================================================================
+CREATE TABLE clients (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    phone VARCHAR(20),
+    address TEXT,
+    city VARCHAR(50),
+    postal_code VARCHAR(10),
+    loyalty_points INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_client_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_client_email ON client(email);
-CREATE INDEX idx_client_telephone ON client(telephone);
-CREATE INDEX idx_client_statut ON client(statut);
+CREATE INDEX idx_clients_user_id ON clients(user_id);
+CREATE INDEX idx_clients_phone ON clients(phone);
 
--- Table LIVREUR
-CREATE TABLE livreur (
-    id_livreur BIGSERIAL PRIMARY KEY,
-    nom VARCHAR(100) NOT NULL,
-    prenom VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    telephone VARCHAR(20) NOT NULL,
-    mot_de_passe VARCHAR(255) NOT NULL,
-    vehicule VARCHAR(50),
-    statut VARCHAR(20) DEFAULT 'DISPONIBLE' CHECK (statut IN ('DISPONIBLE', 'EN_LIVRAISON', 'INDISPONIBLE')),
-    date_embauche DATE NOT NULL,
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_livreur_statut ON livreur(statut);
-CREATE INDEX idx_livreur_email ON livreur(email);
-
--- ============================================================================
--- 2. TABLES PRODUITS
--- ============================================================================
-
--- Table BURGER
-CREATE TABLE burger (
-    id_burger BIGSERIAL PRIMARY KEY,
-    nom VARCHAR(150) NOT NULL,
+-- =============================================================================
+-- TABLE: menus (Menus disponibles)
+-- =============================================================================
+CREATE TABLE menus (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
     description TEXT,
-    prix DECIMAL(10, 2) NOT NULL CHECK (prix >= 0),
-    image VARCHAR(500),
-    statut VARCHAR(20) DEFAULT 'ACTIF' CHECK (statut IN ('ACTIF', 'ARCHIVE')),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    price DECIMAL(10,2) NOT NULL,
+    image_url VARCHAR(255),
+    is_available BOOLEAN DEFAULT TRUE,
+    category VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_menu_price CHECK (price >= 0)
 );
 
-CREATE INDEX idx_burger_statut ON burger(statut);
-CREATE INDEX idx_burger_nom ON burger(nom);
+CREATE INDEX idx_menus_category ON menus(category);
+CREATE INDEX idx_menus_available ON menus(is_available);
 
--- Table COMPLEMENT
-CREATE TABLE complement (
-    id_complement BIGSERIAL PRIMARY KEY,
-    nom VARCHAR(150) NOT NULL,
+-- =============================================================================
+-- TABLE: complements (Compléments: boissons, frites, sauces, desserts)
+-- =============================================================================
+CREATE TABLE complements (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
     description TEXT,
-    prix DECIMAL(10, 2) NOT NULL CHECK (prix >= 0),
-    image VARCHAR(500),
-    statut VARCHAR(20) DEFAULT 'ACTIF' CHECK (statut IN ('ACTIF', 'ARCHIVE')),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    price DECIMAL(10,2) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    image_url VARCHAR(255),
+    is_available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_complement_type CHECK (type IN ('DRINK', 'SIDE', 'SAUCE', 'DESSERT')),
+    CONSTRAINT chk_complement_price CHECK (price >= 0)
 );
 
-CREATE INDEX idx_complement_statut ON complement(statut);
-CREATE INDEX idx_complement_nom ON complement(nom);
+CREATE INDEX idx_complements_type ON complements(type);
+CREATE INDEX idx_complements_available ON complements(is_available);
 
--- Table MENU
-CREATE TABLE menu (
-    id_menu BIGSERIAL PRIMARY KEY,
-    nom VARCHAR(150) NOT NULL,
+-- =============================================================================
+-- TABLE: burgers (Burgers disponibles)
+-- =============================================================================
+CREATE TABLE burgers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
     description TEXT,
-    image VARCHAR(500),
-    statut VARCHAR(20) DEFAULT 'ACTIF' CHECK (statut IN ('ACTIF', 'ARCHIVE')),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    base_price DECIMAL(10,2) NOT NULL,
+    image_url VARCHAR(255),
+    bread_type VARCHAR(50),
+    meat_type VARCHAR(50),
+    is_vegetarian BOOLEAN DEFAULT FALSE,
+    is_available BOOLEAN DEFAULT TRUE,
+    spicy_level INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_burger_price CHECK (base_price >= 0),
+    CONSTRAINT chk_spicy_level CHECK (spicy_level BETWEEN 0 AND 5)
 );
 
-CREATE INDEX idx_menu_statut ON menu(statut);
-CREATE INDEX idx_menu_nom ON menu(nom);
+CREATE INDEX idx_burgers_available ON burgers(is_available);
+CREATE INDEX idx_burgers_vegetarian ON burgers(is_vegetarian);
 
--- Table MENU_BURGER (Association Menu-Burger)
-CREATE TABLE menu_burger (
-    id_menu_burger BIGSERIAL PRIMARY KEY,
-    id_menu BIGINT NOT NULL,
-    id_burger BIGINT NOT NULL,
-    quantite INT DEFAULT 1 CHECK (quantite > 0),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_menu) REFERENCES menu(id_menu) ON DELETE CASCADE,
-    FOREIGN KEY (id_burger) REFERENCES burger(id_burger) ON DELETE CASCADE,
-    UNIQUE(id_menu, id_burger)
+-- =============================================================================
+-- TABLE: burger_complements (Relation Many-to-Many entre Burgers et Compléments)
+-- =============================================================================
+CREATE TABLE burger_complements (
+    id SERIAL PRIMARY KEY,
+    burger_id INTEGER NOT NULL,
+    complement_id INTEGER NOT NULL,
+    quantity INTEGER DEFAULT 1,
+    CONSTRAINT fk_bc_burger FOREIGN KEY (burger_id) REFERENCES burgers(id) ON DELETE CASCADE,
+    CONSTRAINT fk_bc_complement FOREIGN KEY (complement_id) REFERENCES complements(id) ON DELETE CASCADE,
+    CONSTRAINT chk_bc_quantity CHECK (quantity > 0),
+    CONSTRAINT uq_burger_complement UNIQUE (burger_id, complement_id)
 );
 
-CREATE INDEX idx_menu_burger_menu ON menu_burger(id_menu);
-CREATE INDEX idx_menu_burger_burger ON menu_burger(id_burger);
+CREATE INDEX idx_bc_burger ON burger_complements(burger_id);
+CREATE INDEX idx_bc_complement ON burger_complements(complement_id);
 
--- Table MENU_COMPLEMENT (Association Menu-Complément)
-CREATE TABLE menu_complement (
-    id_menu_complement BIGSERIAL PRIMARY KEY,
-    id_menu BIGINT NOT NULL,
-    id_complement BIGINT NOT NULL,
-    quantite INT DEFAULT 1 CHECK (quantite > 0),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_menu) REFERENCES menu(id_menu) ON DELETE CASCADE,
-    FOREIGN KEY (id_complement) REFERENCES complement(id_complement) ON DELETE CASCADE,
-    UNIQUE(id_menu, id_complement)
+-- =============================================================================
+-- TABLE: orders (Commandes clients)
+-- =============================================================================
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'PENDING',
+    total_amount DECIMAL(10,2) NOT NULL,
+    payment_method VARCHAR(50),
+    payment_status VARCHAR(20) DEFAULT 'PENDING',
+    delivery_address TEXT,
+    delivery_type VARCHAR(20) DEFAULT 'DINE_IN',
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_order_client FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
+    CONSTRAINT chk_order_status CHECK (status IN ('PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DELIVERED', 'CANCELLED')),
+    CONSTRAINT chk_payment_status CHECK (payment_status IN ('PENDING', 'PAID', 'REFUNDED')),
+    CONSTRAINT chk_delivery_type CHECK (delivery_type IN ('DINE_IN', 'TAKEAWAY', 'DELIVERY')),
+    CONSTRAINT chk_total_amount CHECK (total_amount >= 0)
 );
 
-CREATE INDEX idx_menu_complement_menu ON menu_complement(id_menu);
-CREATE INDEX idx_menu_complement_complement ON menu_complement(id_complement);
+CREATE INDEX idx_orders_client ON orders(client_id);
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_date ON orders(order_date);
+CREATE INDEX idx_orders_payment_status ON orders(payment_status);
 
--- ============================================================================
--- 3. TABLES ZONES ET QUARTIERS
--- ============================================================================
-
--- Table ZONE
-CREATE TABLE zone (
-    id_zone BIGSERIAL PRIMARY KEY,
-    nom VARCHAR(150) NOT NULL UNIQUE,
-    prix_livraison DECIMAL(10, 2) NOT NULL CHECK (prix_livraison >= 0),
-    description TEXT,
-    statut VARCHAR(20) DEFAULT 'ACTIF' CHECK (statut IN ('ACTIF', 'INACTIF')),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- =============================================================================
+-- TABLE: order_lines (Lignes de commande - détail des items commandés)
+-- =============================================================================
+CREATE TABLE order_lines (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL,
+    item_type VARCHAR(20) NOT NULL,
+    item_id INTEGER NOT NULL,
+    item_name VARCHAR(100) NOT NULL,
+    quantity INTEGER NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_ol_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    CONSTRAINT chk_item_type CHECK (item_type IN ('BURGER', 'MENU', 'COMPLEMENT')),
+    CONSTRAINT chk_ol_quantity CHECK (quantity > 0),
+    CONSTRAINT chk_unit_price CHECK (unit_price >= 0),
+    CONSTRAINT chk_subtotal CHECK (subtotal >= 0)
 );
 
-CREATE INDEX idx_zone_nom ON zone(nom);
-CREATE INDEX idx_zone_statut ON zone(statut);
+CREATE INDEX idx_ol_order ON order_lines(order_id);
+CREATE INDEX idx_ol_item_type ON order_lines(item_type);
 
--- Table ZONE_QUARTIER (Quartiers couverts par une zone)
-CREATE TABLE zone_quartier (
-    id_zone_quartier BIGSERIAL PRIMARY KEY,
-    id_zone BIGINT NOT NULL,
-    nom_quartier VARCHAR(150) NOT NULL,
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_zone) REFERENCES zone(id_zone) ON DELETE CASCADE,
-    UNIQUE(id_zone, nom_quartier)
-);
+-- =============================================================================
+-- DONNÉES DE TEST (Optionnel)
+-- =============================================================================
 
-CREATE INDEX idx_zone_quartier_zone ON zone_quartier(id_zone);
-CREATE INDEX idx_zone_quartier_nom ON zone_quartier(nom_quartier);
+-- Utilisateur admin par défaut (password: admin123 - CHANGER EN PRODUCTION!)
+-- Hash BCrypt pour "admin123": $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+INSERT INTO users (username, email, password_hash, role) VALUES
+('admin', 'admin@brasilburger.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'ADMIN'),
+('manager', 'manager@brasilburger.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'MANAGER'),
+('client1', 'client1@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'CLIENT');
 
--- ============================================================================
--- 4. TABLES COMMANDES
--- ============================================================================
+-- Client de test
+INSERT INTO clients (user_id, first_name, last_name, phone, address, city, postal_code) VALUES
+(3, 'João', 'Silva', '+33123456789', '123 Rue de Paris', 'Paris', '75001');
 
--- Table COMMANDE
-CREATE TABLE commande (
-    id_commande BIGSERIAL PRIMARY KEY,
-    numero_commande VARCHAR(50) NOT NULL UNIQUE,
-    id_client BIGINT NOT NULL,
-    id_zone BIGINT,
-    id_livreur BIGINT,
-    type_commande VARCHAR(20) NOT NULL CHECK (type_commande IN ('SUR_PLACE', 'A_EMPORTER', 'LIVRAISON')),
-    statut VARCHAR(20) DEFAULT 'EN_ATTENTE' CHECK (statut IN ('EN_ATTENTE', 'EN_PREPARATION', 'PRETE', 'EN_LIVRAISON', 'LIVREE', 'ANNULEE')),
-    montant_total DECIMAL(10, 2) NOT NULL CHECK (montant_total >= 0),
-    adresse_livraison VARCHAR(500),
-    commentaire TEXT,
-    date_commande TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_livraison_prevue TIMESTAMP,
-    date_livraison_effective TIMESTAMP,
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_client) REFERENCES client(id_client) ON DELETE CASCADE,
-    FOREIGN KEY (id_zone) REFERENCES zone(id_zone) ON DELETE SET NULL,
-    FOREIGN KEY (id_livreur) REFERENCES livreur(id_livreur) ON DELETE SET NULL
-);
+-- Compléments
+INSERT INTO complements (name, description, price, type) VALUES
+('Coca-Cola', 'Boisson gazeuse 33cl', 2.50, 'DRINK'),
+('Fanta Orange', 'Boisson gazeuse 33cl', 2.50, 'DRINK'),
+('Sprite', 'Boisson gazeuse 33cl', 2.50, 'DRINK'),
+('Eau Minérale', 'Eau plate 50cl', 1.50, 'DRINK'),
+('Frites Classiques', 'Portion moyenne', 3.00, 'SIDE'),
+('Frites Cheddar', 'Avec fromage cheddar fondu', 4.50, 'SIDE'),
+('Onion Rings', '6 pièces', 3.50, 'SIDE'),
+('Sauce Ketchup', 'Sachet 20ml', 0.50, 'SAUCE'),
+('Sauce Mayonnaise', 'Sachet 20ml', 0.50, 'SAUCE'),
+('Sauce Barbecue', 'Sachet 20ml', 0.50, 'SAUCE'),
+('Sauce Pimentée', 'Sachet 20ml', 0.50, 'SAUCE'),
+('Brownie Chocolat', 'Fait maison', 4.00, 'DESSERT'),
+('Cheesecake', 'New York style', 5.00, 'DESSERT');
 
-CREATE INDEX idx_commande_numero ON commande(numero_commande);
-CREATE INDEX idx_commande_client ON commande(id_client);
-CREATE INDEX idx_commande_statut ON commande(statut);
-CREATE INDEX idx_commande_date ON commande(date_commande);
-CREATE INDEX idx_commande_livreur ON commande(id_livreur);
-CREATE INDEX idx_commande_zone ON commande(id_zone);
+-- Burgers
+INSERT INTO burgers (name, description, base_price, bread_type, meat_type, is_vegetarian, spicy_level) VALUES
+('Brasil Classic', 'Notre burger signature avec steak haché 150g, cheddar, salade, tomate, oignons', 8.90, 'Brioche', 'Boeuf', FALSE, 0),
+('Picanha Burger', 'Steak de picanha 180g, fromage coalho, chimichurri', 11.90, 'Sésame', 'Boeuf', FALSE, 1),
+('Frango Crispy', 'Poulet pané croustillant, sauce aioli, salade, cornichons', 8.50, 'Brioche', 'Poulet', FALSE, 0),
+('Veggie Tropical', 'Galette végétale, ananas grillé, avocat, sauce teriyaki', 9.90, 'Complet', 'Végétarien', TRUE, 0),
+('Bacon Lovers', 'Double steak, double bacon, double cheddar, sauce BBQ', 12.90, 'Brioche', 'Boeuf', FALSE, 1),
+('Spicy Brasil', 'Steak épicé, jalapeños, piment, cheddar, sauce pimentée', 10.50, 'Sésame', 'Boeuf', FALSE, 4);
 
--- Table LIGNE_COMMANDE (Détails des produits commandés)
-CREATE TABLE ligne_commande (
-    id_ligne_commande BIGSERIAL PRIMARY KEY,
-    id_commande BIGINT NOT NULL,
-    id_burger BIGINT,
-    id_menu BIGINT,
-    quantite INT NOT NULL CHECK (quantite > 0),
-    prix_unitaire DECIMAL(10, 2) NOT NULL CHECK (prix_unitaire >= 0),
-    sous_total DECIMAL(10, 2) NOT NULL CHECK (sous_total >= 0),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_commande) REFERENCES commande(id_commande) ON DELETE CASCADE,
-    FOREIGN KEY (id_burger) REFERENCES burger(id_burger) ON DELETE CASCADE,
-    FOREIGN KEY (id_menu) REFERENCES menu(id_menu) ON DELETE CASCADE,
-    CHECK ((id_burger IS NOT NULL AND id_menu IS NULL) OR (id_burger IS NULL AND id_menu IS NOT NULL))
-);
+-- Menus
+INSERT INTO menus (name, description, price, category) VALUES
+('Menu Brasil Classic', 'Burger Brasil Classic + Frites + Boisson', 13.90, 'MENU_BURGER'),
+('Menu Picanha', 'Burger Picanha + Frites Cheddar + Boisson + Dessert', 18.90, 'MENU_PREMIUM'),
+('Menu Frango', 'Burger Frango Crispy + Frites + Boisson', 12.90, 'MENU_BURGER'),
+('Menu Enfant', 'Petit burger + Petites frites + Jus de fruits + Surprise', 8.90, 'MENU_ENFANT'),
+('Menu Veggie', 'Burger Veggie Tropical + Frites + Boisson + Dessert', 15.90, 'MENU_VEGETARIAN');
 
-CREATE INDEX idx_ligne_commande_commande ON ligne_commande(id_commande);
-CREATE INDEX idx_ligne_commande_burger ON ligne_commande(id_burger);
-CREATE INDEX idx_ligne_commande_menu ON ligne_commande(id_menu);
+-- =============================================================================
+-- FONCTIONS ET TRIGGERS (Mise à jour automatique updated_at)
+-- =============================================================================
 
--- Table LIGNE_COMMANDE_COMPLEMENT (Compléments ajoutés aux produits)
-CREATE TABLE ligne_commande_complement (
-    id_ligne_commande_complement BIGSERIAL PRIMARY KEY,
-    id_ligne_commande BIGINT NOT NULL,
-    id_complement BIGINT NOT NULL,
-    quantite INT NOT NULL CHECK (quantite > 0),
-    prix_unitaire DECIMAL(10, 2) NOT NULL CHECK (prix_unitaire >= 0),
-    sous_total DECIMAL(10, 2) NOT NULL CHECK (sous_total >= 0),
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_ligne_commande) REFERENCES ligne_commande(id_ligne_commande) ON DELETE CASCADE,
-    FOREIGN KEY (id_complement) REFERENCES complement(id_complement) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_ligne_complement_ligne ON ligne_commande_complement(id_ligne_commande);
-CREATE INDEX idx_ligne_complement_complement ON ligne_commande_complement(id_complement);
-
--- ============================================================================
--- 5. TABLE PAIEMENT
--- ============================================================================
-
--- Table PAIEMENT
-CREATE TABLE paiement (
-    id_paiement BIGSERIAL PRIMARY KEY,
-    id_commande BIGINT NOT NULL UNIQUE,
-    montant DECIMAL(10, 2) NOT NULL CHECK (montant >= 0),
-    mode_paiement VARCHAR(20) NOT NULL CHECK (mode_paiement IN ('WAVE', 'OM', 'ESPECES', 'CARTE')),
-    statut VARCHAR(20) DEFAULT 'EN_ATTENTE' CHECK (statut IN ('EN_ATTENTE', 'VALIDE', 'ECHOUE', 'REMBOURSE')),
-    reference_transaction VARCHAR(100),
-    date_paiement TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_commande) REFERENCES commande(id_commande) ON DELETE CASCADE
-);
-
-CREATE INDEX idx_paiement_commande ON paiement(id_commande);
-CREATE INDEX idx_paiement_statut ON paiement(statut);
-CREATE INDEX idx_paiement_mode ON paiement(mode_paiement);
-CREATE INDEX idx_paiement_date ON paiement(date_paiement);
-
--- ============================================================================
--- 6. DONNEES DE TEST (Optionnel)
--- ============================================================================
-
--- Insertion données test gestionnaire
-INSERT INTO gestionnaire (nom, prenom, email, mot_de_passe, telephone, date_embauche) VALUES
-('Admin', 'Sistema', 'admin@brasilburger.com', '$2a$10$demoPasswordHash123', '221234567', CURRENT_DATE);
-
--- Insertion données test burgers
-INSERT INTO burger (nom, description, prix, statut) VALUES
-('Brasil Classique', 'Burger classique avec steak, salade, tomate, oignons', 3500.00, 'ACTIF'),
-('Brasil Double', 'Double steak, double fromage, sauce spéciale', 5500.00, 'ACTIF'),
-('Brasil Spicy', 'Burger épicé avec sauce pimentée', 4000.00, 'ACTIF');
-
--- Insertion données test compléments
-INSERT INTO complement (nom, description, prix, statut) VALUES
-('Frites', 'Frites croustillantes', 1000.00, 'ACTIF'),
-('Boisson 33cl', 'Coca, Sprite, Fanta', 500.00, 'ACTIF');
-
--- Insertion données test zones
-INSERT INTO zone (nom, prix_livraison, description) VALUES
-('Zone Centre', 500.00, 'Centre-ville et environs'),
-('Zone Banlieue', 1000.00, 'Banlieue éloignée');
-
--- Insertion quartiers
-INSERT INTO zone_quartier (id_zone, nom_quartier) VALUES
-(1, 'Plateau'),
-(1, 'Medina'),
-(2, 'Parcelles Assainies'),
-(2, 'Guediawaye');
-
--- ============================================================================
--- 7. FONCTIONS UTILES
--- ============================================================================
-
--- Fonction pour générer un numéro de commande unique
-CREATE OR REPLACE FUNCTION generer_numero_commande()
-RETURNS TEXT AS $$
-BEGIN
-    RETURN 'CMD-' || TO_CHAR(CURRENT_DATE, 'YYYYMMDD') || '-' || LPAD(NEXTVAL('commande_id_commande_seq')::TEXT, 6, '0');
-END;
-$$ LANGUAGE plpgsql;
-
--- Fonction pour calculer le prix d'un menu
-CREATE OR REPLACE FUNCTION calculer_prix_menu(p_id_menu BIGINT)
-RETURNS DECIMAL(10,2) AS $$
-DECLARE
-    v_total DECIMAL(10,2) := 0;
-BEGIN
-    -- Prix des burgers du menu
-    SELECT COALESCE(SUM(b.prix * mb.quantite), 0) INTO v_total
-    FROM menu_burger mb
-    JOIN burger b ON b.id_burger = mb.id_burger
-    WHERE mb.id_menu = p_id_menu;
-    
-    -- Ajouter prix des compléments
-    SELECT v_total + COALESCE(SUM(c.prix * mc.quantite), 0) INTO v_total
-    FROM menu_complement mc
-    JOIN complement c ON c.id_complement = mc.id_complement
-    WHERE mc.id_menu = p_id_menu;
-    
-    RETURN v_total;
-END;
-$$ LANGUAGE plpgsql;
-
--- ============================================================================
--- 8. TRIGGERS
--- ============================================================================
-
--- Trigger pour mettre à jour date_modification automatiquement
-CREATE OR REPLACE FUNCTION update_date_modification()
+CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.date_modification = CURRENT_TIMESTAMP;
+    NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Appliquer le trigger sur toutes les tables avec date_modification
-CREATE TRIGGER trg_gestionnaire_update BEFORE UPDATE ON gestionnaire
-    FOR EACH ROW EXECUTE FUNCTION update_date_modification();
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER trg_client_update BEFORE UPDATE ON client
-    FOR EACH ROW EXECUTE FUNCTION update_date_modification();
+CREATE TRIGGER update_clients_updated_at BEFORE UPDATE ON clients
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER trg_livreur_update BEFORE UPDATE ON livreur
-    FOR EACH ROW EXECUTE FUNCTION update_date_modification();
+CREATE TRIGGER update_menus_updated_at BEFORE UPDATE ON menus
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER trg_burger_update BEFORE UPDATE ON burger
-    FOR EACH ROW EXECUTE FUNCTION update_date_modification();
+CREATE TRIGGER update_complements_updated_at BEFORE UPDATE ON complements
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER trg_complement_update BEFORE UPDATE ON complement
-    FOR EACH ROW EXECUTE FUNCTION update_date_modification();
+CREATE TRIGGER update_burgers_updated_at BEFORE UPDATE ON burgers
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER trg_menu_update BEFORE UPDATE ON menu
-    FOR EACH ROW EXECUTE FUNCTION update_date_modification();
+CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER trg_zone_update BEFORE UPDATE ON zone
-    FOR EACH ROW EXECUTE FUNCTION update_date_modification();
+-- =============================================================================
+-- VÉRIFICATION DES TABLES CRÉÉES
+-- =============================================================================
 
-CREATE TRIGGER trg_commande_update BEFORE UPDATE ON commande
-    FOR EACH ROW EXECUTE FUNCTION update_date_modification();
+SELECT 
+    table_name,
+    (SELECT COUNT(*) FROM information_schema.columns WHERE table_name = t.table_name) as column_count
+FROM information_schema.tables t
+WHERE table_schema = 'public' 
+  AND table_type = 'BASE TABLE'
+ORDER BY table_name;
 
--- ============================================================================
+-- =============================================================================
 -- FIN DU SCRIPT
--- ============================================================================
--- Script exécuté avec succès !
--- Base de données Brasil Burger (PostgreSQL/Neon) prête pour les 3 applications
--- ============================================================================
+-- Script créé pour Brasil Burger - PostgreSQL/Neon
+-- Exécuter sur: https://console.neon.tech/app/projects
+-- =============================================================================

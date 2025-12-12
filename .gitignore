@@ -21,6 +21,14 @@ obj/
 /symfony/.env.local
 /symfony/.env.*.local
 
+# Environment variables avec credentials (JAMAIS commit)
+.env.local
+.env.*.local
+appsettings.Development.json
+appsettings.Production.json
+application-dev.yml
+application-prod.yml
+
 # IDE
 .vscode/
 .idea/

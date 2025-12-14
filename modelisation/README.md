@@ -9,13 +9,20 @@
 ```
 modelisation/
 ├── usecase.puml              ✅ Diagramme Use Case
+├── usecase.png               ✅ Export PNG
 ├── classdiagram.puml         ✅ Diagramme de Classe
+├── classdiagram.png          ✅ Export PNG
 ├── sequence_commande.puml    ✅ Diagramme de Séquence - Commande
+├── sequence_commande.png     ✅ Export PNG
 ├── sequence_paiement.puml    ✅ Diagramme de Séquence - Paiement
+├── sequence_paiement.png     ✅ Export PNG
 ├── sequence_livraison.puml   ✅ Diagramme de Séquence - Livraison
-├── mld.png                   ⏳ MLD (à générer via StarUML/PlantUML)
+├── sequence_livraison.png    ✅ Export PNG
 ├── mld.puml                  ✅ MLD en PlantUML
+├── mld.png                   ✅ Export PNG
 ├── mld.sql                   ✅ Script SQL PostgreSQL
+├── maquettes/                ✅ Maquettes Figma
+│   └── README.md             ✅ Lien Figma
 └── README.md                 ✅ Ce fichier
 ```
 

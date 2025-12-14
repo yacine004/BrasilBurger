@@ -3,29 +3,36 @@
 ## Description
 Maquettes d'interface utilisateur realisees sur Figma pour le projet Brasil Burger.
 
-## Lien Figma
-**[Voir les maquettes sur Figma](https://www.figma.com/make/4hI8hu0YUofu3DSWC7Rdcj/Trip-Itinerary-App?node-id=0-1&p=f&t=C2j22QMP3N9vRNvF-0)**
+## Structure des fichiers
 
-> Note : Assurez-vous que le lien est public (Anyone with the link can view)
+### client/
+Maquettes pour l'application client (C# ASP.NET MVC - Livrable 2) :
+- `01_accueil.png` - Page d'accueil
+- `02_liste_burgers.png` - Liste des burgers
+- `03_details_burger.png` - Details d'un burger
+- `04_panier.png` - Panier
+- `05_paiement.png` - Page de paiement
+- `06_suivi_commande.png` - Suivi de commande
+- `07_profil.png` - Profil utilisateur
+
+### gestionnaire/
+Maquettes pour le dashboard gestionnaire (Symfony - Livrable 3) :
+- `01_dashboard.png` - Dashboard principal avec KPIs
+- `02_gestion_burgers.png` - Liste des burgers
+- `03_form_burger.png` - Formulaire ajout/modification burger
+- `04_gestion_menus.png` - Liste des menus
+- `05_form_menu.png` - Formulaire menu
+- `06_gestion_complements.png` - Liste des complements
+- `07_gestion_commandes.png` - Liste des commandes
+- `08_statistiques.png` - Page statistiques et rapports
 
 ## Contenu des Maquettes
 
-### Application Client (C# ASP.NET MVC - Livrable 2)
-- Page d'accueil
-- Liste des burgers
-- Details d'un burger
-- Panier
-- Paiement
-- Suivi de commande
-- Profil utilisateur
+### Application Client
+Design des interfaces utilisateur pour commander des burgers, gerer son panier et suivre ses commandes.
 
-### Dashboard Gestionnaire (Symfony - Livrable 3)
-- Dashboard principal avec KPIs
-- Gestion des burgers
-- Gestion des menus
-- Gestion des complements
-- Liste des commandes
-- Statistiques et rapports
+### Dashboard Gestionnaire
+Design des interfaces d'administration pour gerer les produits, commandes et consulter les statistiques.
 
 ## Informations Techniques
 - Design responsive (Desktop + Mobile)

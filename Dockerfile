@@ -1,34 +1,35 @@
-# Build stage
+# Build stage - Compile l'app ASP.NET Core
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
-WORKDIR /app
+WORKDIR /src
 
-# Copy the project file
-COPY csharp/BrasilBurger.Web/*.csproj ./
+# Copier le projet C#
+COPY csharp/BrasilBurger.Web/BrasilBurger.Web.csproj ./
 
-# Restore dependencies
+# Restaurer les dépendances
 RUN dotnet restore
 
-# Copy the rest of the source code
+# Copier tout le code source
 COPY csharp/BrasilBurger.Web/ ./
 
-# Build and publish
-RUN dotnet publish -c Release -o /app/publish
+# Compiler et publier
+RUN dotnet publish -c Release -o /app/publish --no-restore
 
-# Runtime stage
+# Runtime stage - Image minimale pour l'exécution
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 
 WORKDIR /app
 
-# Copy the published application
+# Copier l'application compilée
 COPY --from=build /app/publish .
 
-# Expose the port
+# Port (Render utilise ce port)
 EXPOSE 8080
 
-# Set environment variables
+# Variables d'environnement
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_CONTENTROOT=/app
 
-# Run the application
+# Lancer l'application
 ENTRYPOINT ["dotnet", "BrasilBurger.Web.dll"]

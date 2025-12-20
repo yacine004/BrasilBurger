@@ -20,10 +20,10 @@ public class HomeController : Controller
     {
         var homeViewModel = new HomeViewModel
         {
-            BurgersRecents = await _context.Burgers.Take(6).ToListAsync(),
-            MenusRecents = await _context.Menus.Take(3).ToListAsync(),
-            MenusPopulaires = await _context.Menus.Take(3).ToListAsync(),
-            ComplementsPopulaires = await _context.Complements.Take(6).ToListAsync()
+            BurgersRecents = await _context.Burgers.OrderByDescending(b => b.Id).Take(6).ToListAsync(),
+            MenusRecents = await _context.Menus.OrderByDescending(m => m.Id).Take(3).ToListAsync(),
+            MenusPopulaires = await _context.Menus.OrderByDescending(m => m.Id).Take(3).ToListAsync(),
+            ComplementsPopulaires = await _context.Complements.OrderByDescending(c => c.Id).Take(6).ToListAsync()
         };
         return View(homeViewModel);
     }

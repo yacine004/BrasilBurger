@@ -1,0 +1,76 @@
+@{
+    ViewData["Title"] = "Créer un Compte";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <h1 class="card-title text-center mb-4">Créer un Compte</h1>
+
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Count > 0)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <p class="mb-0">@error.ErrorMessage</p>
+                            }
+                        </div>
+                    }
+
+                    <form method="post" asp-action="Register">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nom" class="form-label">Nom</label>
+                                <input type="text" name="nom" id="nom" class="form-control" placeholder="Votre nom" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="prenom" class="form-label">Prénom</label>
+                                <input type="text" name="prenom" id="prenom" class="form-control" placeholder="Votre prénom" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Adresse Email</label>
+                            <input type="email" name="email" id="email" class="form-control" placeholder="votre@email.com" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="telephone" class="form-label">Numéro de Téléphone</label>
+                            <input type="tel" name="telephone" id="telephone" class="form-control" placeholder="+221 77 XXX XX XX" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="motDePasse" class="form-label">Mot de Passe</label>
+                            <input type="password" name="motDePasse" id="motDePasse" class="form-control" placeholder="••••••••" required>
+                            <small class="text-muted">Minimum 8 caractères</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="confirmMotDePasse" class="form-label">Confirmer le Mot de Passe</label>
+                            <input type="password" name="confirmMotDePasse" id="confirmMotDePasse" class="form-control" placeholder="••••••••" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            Créer mon Compte
+                        </button>
+                    </form>
+
+                    <hr>
+
+                    <p class="text-center text-muted mb-0">
+                        Déjà inscrit?
+                        <a href="@Url.Action("Login", "Client")" class="text-primary fw-bold">Se connecter</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="@Url.Action("Index", "Home")" class="text-muted">
+                    <i class="fas fa-arrow-left"></i> Retour à l'Accueil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

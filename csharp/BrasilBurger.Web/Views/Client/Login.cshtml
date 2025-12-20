@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Connexion";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <h1 class="card-title text-center mb-4">Connexion</h1>
+
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Count > 0)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <p class="mb-0">@error.ErrorMessage</p>
+                            }
+                        </div>
+                    }
+
+                    <form method="post" asp-action="Login">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Adresse Email</label>
+                            <input type="email" name="email" id="email" class="form-control" placeholder="votre@email.com" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="motDePasse" class="form-label">Mot de Passe</label>
+                            <input type="password" name="motDePasse" id="motDePasse" class="form-control" placeholder="••••••••" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            Se Connecter
+                        </button>
+                    </form>
+
+                    <hr>
+
+                    <p class="text-center text-muted mb-0">
+                        Pas encore de compte?
+                        <a href="@Url.Action("Register", "Client")" class="text-primary fw-bold">Créer un compte</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="@Url.Action("Index", "Home")" class="text-muted">
+                    <i class="fas fa-arrow-left"></i> Retour à l'Accueil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

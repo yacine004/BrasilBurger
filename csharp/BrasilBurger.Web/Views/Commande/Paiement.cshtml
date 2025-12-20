@@ -1,0 +1,256 @@
+@model Commande
+
+@{
+    ViewData["Title"] = "Paiement";
+}
+
+<div style="background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%); padding: 40px 0; margin-bottom: 40px;">
+    <div class="container">
+        <h1 class="text-white mb-0" style="font-size: 2.5rem; font-weight: bold;">
+            <i class="fas fa-credit-card"></i> Paiement Sécurisé
+        </h1>
+        <p class="text-light mt-2">Finalisez votre paiement pour confirmer votre commande</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row">
+        <!-- Formulaire de paiement -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%); border: none; padding: 25px; color: white;">
+                    <h5 class="mb-0">Détails du Paiement</h5>
+                </div>
+                <div class="card-body" style="padding: 40px;">
+                    <form id="paymentForm" method="post" asp-action="ProcesserPaiement">
+                        <input type="hidden" name="idCommande" value="@Model.Id">
+
+                        <!-- Choix du mode de paiement -->
+                        <h6 class="mb-4" style="font-weight: bold; color: #333;">Choisir votre mode de paiement</h6>
+
+                        <div class="row mb-4">
+                            <!-- Option Wave -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card payment-option" onclick="selectPaymentMethod('wave')" style="cursor: pointer; border: 3px solid #ddd; transition: all 0.3s;">
+                                    <div class="card-body text-center" style="padding: 30px;">
+                                        <div style="font-size: 3rem; margin-bottom: 15px;">📱</div>
+                                        <h6 style="font-weight: bold; color: #333; margin-bottom: 5px;">WAVE</h6>
+                                        <small class="text-muted">Paiement mobile sécurisé</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Option Orange Money -->
+                            <div class="col-md-6 mb-3">
+                                <div class="card payment-option" onclick="selectPaymentMethod('orange')" style="cursor: pointer; border: 3px solid #ddd; transition: all 0.3s;">
+                                    <div class="card-body text-center" style="padding: 30px;">
+                                        <div style="font-size: 3rem; margin-bottom: 15px;">🟠</div>
+                                        <h6 style="font-weight: bold; color: #333; margin-bottom: 5px;">ORANGE MONEY</h6>
+                                        <small class="text-muted">Paiement mobile sécurisé</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mode de paiement sélectionné (caché) -->
+                        <input type="hidden" id="paymentMethod" name="paymentMethod" value="">
+
+                        <!-- Formulaire Wave -->
+                        <div id="waveForm" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 2px solid #eee;">
+                            <h6 style="font-weight: bold; color: #333; margin-bottom: 20px;">Informations WAVE</h6>
+                            <div class="mb-3">
+                                <label for="wavePhone" class="form-label fw-bold">Numéro Wave (téléphone) *</label>
+                                <input type="tel" id="wavePhone" name="wavePhone" class="form-control form-control-lg" placeholder="+223 XX XX XX XX" required>
+                                <small class="text-muted">Entrez votre numéro Wave</small>
+                            </div>
+                        </div>
+
+                        <!-- Formulaire Orange Money -->
+                        <div id="orangeForm" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 2px solid #eee;">
+                            <h6 style="font-weight: bold; color: #333; margin-bottom: 20px;">Informations ORANGE MONEY</h6>
+                            <div class="mb-3">
+                                <label for="orangePhone" class="form-label fw-bold">Numéro Orange Money (téléphone) *</label>
+                                <input type="tel" id="orangePhone" name="orangePhone" class="form-control form-control-lg" placeholder="+223 XX XX XX XX" required>
+                                <small class="text-muted">Entrez votre numéro Orange Money</small>
+                            </div>
+                        </div>
+
+                        <!-- Acceptation des conditions -->
+                        <div class="form-check mb-4 mt-4">
+                            <input class="form-check-input" type="checkbox" id="termsAccepted" name="termsAccepted" required>
+                            <label class="form-check-label" for="termsAccepted">
+                                J'accepte les conditions de paiement et je confirm ma commande
+                            </label>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" id="submitBtn" class="btn btn-lg" style="background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%); color: white; border: none; font-weight: bold; padding: 15px;" disabled>
+                                <i class="fas fa-lock"></i> Payer Sécurisé - <span id="totalAmount">0.00</span> XOF
+                            </button>
+                            <a href="@Url.Action("Checkout", "Commande")" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> Retour
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Résumé de la commande -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg" style="position: sticky; top: 20px;">
+                <div class="card-header" style="background: linear-gradient(135deg, #F4511E 0%, #FF9800 100%); border: none; padding: 25px; color: white;">
+                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Résumé Commande</h5>
+                </div>
+                <div class="card-body" style="padding: 30px;">
+                    <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                        <p style="margin: 0; font-weight: bold; color: #333;">Commande #@Model.Id</p>
+                        <small class="text-muted">@Model.Date.ToString("dd/MM/yyyy à HH:mm")</small>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h6 style="font-weight: bold; margin-bottom: 15px; color: #333;">Articles</h6>
+
+                        @if (Model.CommandeBurgers.Count > 0)
+                        {
+                            <div style="margin-bottom: 10px;">
+                                <strong>Burgers:</strong>
+                                <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
+                                    @foreach (var burger in Model.CommandeBurgers)
+                                    {
+                                        <li><small>- @burger.Qte x Burger #@burger.IdBurger</small></li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        @if (Model.CommandeMenus.Count > 0)
+                        {
+                            <div style="margin-bottom: 10px;">
+                                <strong>Menus:</strong>
+                                <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
+                                    @foreach (var menu in Model.CommandeMenus)
+                                    {
+                                        <li><small>- @menu.Qte x Menu #@menu.IdMenu</small></li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #F4511E;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h5 style="margin: 0; color: #333;">Montant Total:</h5>
+                            <h4 style="margin: 0; color: #F4511E; font-weight: bold;">
+                                <span id="totalPrice">0.00</span> XOF
+                            </h4>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                            <i class="fas fa-shield-alt" style="color: #4CAF50;"></i>
+                            Paiement sécurisé par SSL
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Format card number
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s+/g, '');
+            let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formatted;
+        });
+
+        // Format expiry date
+        document.getElementById('expiryDate').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+        // Sélectionner le mode de paiement
+        function selectPaymentMethod(method) {
+            document.getElementById('paymentMethod').value = method;
+            
+            // Masquer tous les formulaires
+            document.getElementById('waveForm').style.display = 'none';
+            document.getElementById('orangeForm').style.display = 'none';
+            
+            // Retirer la sélection de toutes les options
+            document.querySelectorAll('.payment-option').forEach(el => {
+                el.style.borderColor = '#ddd';
+                el.style.backgroundColor = 'white';
+            });
+            
+            // Afficher le formulaire sélectionné
+            if (method === 'wave') {
+                document.getElementById('waveForm').style.display = 'block';
+                event.currentTarget.style.borderColor = '#667EEA';
+                event.currentTarget.style.backgroundColor = '#f0f4ff';
+                document.getElementById('wavePhone').required = true;
+                document.getElementById('orangePhone').required = false;
+            } else if (method === 'orange') {
+                document.getElementById('orangeForm').style.display = 'block';
+                event.currentTarget.style.borderColor = '#FF9800';
+                event.currentTarget.style.backgroundColor = '#fff3e0';
+                document.getElementById('orangePhone').required = true;
+                document.getElementById('wavePhone').required = false;
+            }
+            
+            // Activer le bouton de paiement
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        // Set total amount display
+        document.addEventListener('DOMContentLoaded', function() {
+            const totalPrice = document.querySelector('#totalPrice');
+            const totalAmount = document.querySelector('#totalAmount');
+            if (totalPrice && totalAmount) {
+                totalAmount.textContent = totalPrice.textContent;
+            }
+        });
+
+        // Form validation
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Validation simple
+            if (!document.getElementById('termsAccepted').checked) {
+                alert('⚠️ Vous devez accepter les conditions');
+                return;
+            }
+
+            if (!document.getElementById('paymentMethod').value) {
+                alert('⚠️ Veuillez sélectionner un mode de paiement');
+                return;
+            }
+
+            const method = document.getElementById('paymentMethod').value;
+            const phone = method === 'wave' 
+                ? document.getElementById('wavePhone').value 
+                : document.getElementById('orangePhone').value;
+
+            if (!phone) {
+                alert('⚠️ Veuillez entrer votre numéro de téléphone');
+                return;
+            }
+
+            console.log('✅ Formulaire de paiement validé');
+            console.log('📱 Mode:', method.toUpperCase());
+            console.log('📞 Téléphone:', phone);
+            console.log('💰 Montant:', document.getElementById('totalAmount').textContent, 'XOF');
+
+            // Soumettre le formulaire
+            this.submit();
+        });
+    </script>
+}

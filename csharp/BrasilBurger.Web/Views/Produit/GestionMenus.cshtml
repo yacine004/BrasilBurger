@@ -1,0 +1,154 @@
+@model List<BrasilBurger.Web.Models.Menu>
+
+@{
+    ViewData["Title"] = "Gestion des Menus";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 style="margin-bottom: 30px; color: #F45120; font-weight: 900;">
+                <i class="fas fa-utensils me-2"></i>Gestion des Menus
+            </h1>
+
+            <div class="row">
+                @foreach (var menu in Model)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card" style="border: none; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                            <!-- Image Preview -->
+                            <div style="height: 250px; background: linear-gradient(135deg, #FFE0B2, #FFCC80); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                                @if (!string.IsNullOrEmpty(menu.Image))
+                                {
+                                    <img id="preview-@menu.Id" src="@menu.Image" alt="@menu.Nom" style="width: 100%; height: 100%; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div style="text-align: center; color: #999;">
+                                        <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                                        <p>Pas d'image</p>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <h5 class="card-title" style="color: #F45120; font-weight: 700;">@menu.Nom</h5>
+                                <p class="card-text" style="color: #666; margin-bottom: 15px;">
+                                    <strong>Prix:</strong> @menu.Prix.ToString("F2") XOF
+                                </p>
+
+                                <!-- Upload Form -->
+                                <div class="form-group mb-3">
+                                    <input type="file" id="file-@menu.Id" class="form-control" accept="image/*" style="display: none;">
+                                    <button class="btn btn-primary btn-sm w-100" onclick="document.getElementById('file-@menu.Id').click();" style="background: #F45120; border: none;">
+                                        <i class="fas fa-upload me-2"></i>Choisir Image
+                                    </button>
+                                </div>
+
+                                <!-- Upload Button -->
+                                <button class="btn btn-success btn-sm w-100" onclick="uploadImage(@menu.Id)" id="upload-btn-@menu.Id" style="display: none;">
+                                    <i class="fas fa-check me-2"></i>Confirmer Upload
+                                </button>
+
+                                <!-- Delete Button -->
+                                @if (!string.IsNullOrEmpty(menu.Image))
+                                {
+                                    <button class="btn btn-danger btn-sm w-100 mt-2" onclick="deleteImage(@menu.Id)">
+                                        <i class="fas fa-trash me-2"></i>Supprimer Image
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Handle file selection
+    @foreach (var menu in Model)
+    {
+        <text>
+        document.getElementById('file-@menu.Id').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    let previewElement = document.getElementById('preview-@menu.Id');
+                    if (previewElement && previewElement.tagName === 'IMG') {
+                        previewElement.src = event.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+                
+                // Show upload button
+                document.getElementById('upload-btn-@menu.Id').style.display = 'block';
+            }
+        });
+        </text>
+    }
+
+    // Upload image
+    async function uploadImage(menuId) {
+        const fileInput = document.getElementById('file-' + menuId);
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Veuillez sélectionner une image');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch(`/api/image/upload-menu-image/${menuId}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('✅ Image uploadée avec succès!');
+                location.reload();
+            } else {
+                alert('❌ Erreur: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('❌ Erreur lors de l\'upload');
+        }
+    }
+
+    // Delete image
+    async function deleteImage(menuId) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cette image?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/image/delete-menu-image/${menuId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('✅ Image supprimée!');
+                location.reload();
+            } else {
+                alert('❌ Erreur: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('❌ Erreur lors de la suppression');
+        }
+    }
+</script>
+}

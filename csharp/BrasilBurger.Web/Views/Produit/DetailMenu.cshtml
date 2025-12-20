@@ -1,0 +1,53 @@
+@model Menu
+
+@{
+    ViewData["Title"] = "Détail du Menu - " + Model.Nom;
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            @if (!string.IsNullOrEmpty(Model.Image))
+            {
+                <img src="@Model.Image" class="img-fluid rounded" alt="@Model.Nom" style="height: 500px; object-fit: cover; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            }
+            else
+            {
+                <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <div class="text-center">
+                        <i class="fas fa-image" style="font-size: 4rem; color: #ccc; margin-bottom: 15px;"></i>
+                        <p class="text-muted">Pas d'image disponible</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-6">
+            <h1 class="mb-2" style="color: #F45120; font-weight: 900;">@Model.Nom</h1>
+
+            <!-- Affichage du prix du menu -->
+            <div style="background: linear-gradient(135deg, #F45120, #FF8C00); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+                <small style="font-size: 0.9rem; opacity: 0.9;">Prix du menu complet:</small>
+                <h2 style="font-weight: 900; margin: 5px 0; font-size: 2rem;">@Model.Prix.ToString("F2") XOF</h2>
+            </div>
+
+            <form asp-action="AjouterMenu" asp-controller="Panier" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                
+                <div class="mb-3">
+                    <label for="quantite" class="form-label">Quantité:</label>
+                    <input type="number" id="quantite" name="quantite" class="form-control" value="1" min="1" required>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shopping-cart"></i> Ajouter au panier
+                    </button>
+                    <a href="@Url.Action("Menus", "Produit")" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

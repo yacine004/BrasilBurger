@@ -1,0 +1,328 @@
+@model BrasilBurger.Web.Models.Burger
+
+@{
+    ViewData["Title"] = $"Détail - {Model.Nom}";
+}
+
+<!-- Hero Section avec Image -->
+<div style="background: linear-gradient(135deg, rgba(244, 81, 30, 0.95) 0%, rgba(255, 152, 0, 0.95) 100%); padding: 40px 0; margin-bottom: 40px;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                @if (!string.IsNullOrEmpty(Model.Image))
+                {
+                    <img src="@Model.Image" class="img-fluid rounded-4" alt="@Model.Nom" style="height: 450px; object-fit: cover; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                }
+                else
+                {
+                    <div class="bg-dark d-flex align-items-center justify-content-center rounded-4" style="height: 450px;">
+                        <span class="text-light"><i class="fas fa-image"></i> Pas d'image</span>
+                    </div>
+                }
+            </div>
+
+            <div class="col-lg-6">
+                <h1 class="text-white mb-3" style="font-size: 2.5rem; font-weight: bold;">@Model.Nom</h1>
+                
+                <div class="mb-4">
+                    <div class="h3 text-white mb-2">
+                        <i class="fas fa-money-bill-wave" style="color: #FFD700;"></i>
+                        @Model.Prix.ToString("F2") XOF
+                    </div>
+                    @if (Model.Etat)
+                    {
+                        <span class="badge bg-success" style="font-size: 1rem; padding: 8px 15px;">
+                            <i class="fas fa-check-circle"></i> Disponible
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger" style="font-size: 1rem; padding: 8px 15px;">
+                            <i class="fas fa-times-circle"></i> Indisponible
+                        </span>
+                    }
+                </div>
+
+                <p class="text-light" style="font-size: 1.1rem; line-height: 1.6;">
+                    Prêt à savourer? Personnalisez votre burger avec des suppléments et choisissez votre mode de livraison.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenu Principal -->
+<div class="container mb-5">
+        
+        <div class="row">
+            <!-- Colonne Gauche: Options -->
+            <div class="col-lg-8">
+                <!-- Compléments -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header" style="background: linear-gradient(135deg, #F4511E 0%, #FF9800 100%); border: none; padding: 20px;">
+                        <h5 class="text-white mb-0">
+                            <i class="fas fa-plus-circle"></i> Compléments (Optionnel)
+                        </h5>
+                    </div>
+                    <div class="card-body" style="padding: 30px;">
+                        <div class="row g-3" id="complementsList">
+                            <!-- Les compléments seront chargés ici par JavaScript -->
+                            <p class="text-muted text-center">Chargement des compléments...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode de Livraison -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header" style="background: linear-gradient(135deg, #2196F3 0%, #00BCD4 100%); border: none; padding: 20px;">
+                        <h5 class="text-white mb-0">
+                            <i class="fas fa-truck"></i> Mode de Livraison
+                        </h5>
+                    </div>
+                    <div class="card-body" style="padding: 30px;">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="modelivraison" id="surPlace" value="surPlace" checked required style="width: 20px; height: 20px; cursor: pointer;">
+                                    <label class="form-check-label" for="surPlace" style="cursor: pointer; font-size: 1.1rem; margin-left: 10px;">
+                                        <i class="fas fa-utensils" style="color: #4CAF50;"></i> <strong>Sur place</strong>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="modelivraison" id="aRecuperer" value="aRecuperer" required style="width: 20px; height: 20px; cursor: pointer;">
+                                    <label class="form-check-label" for="aRecuperer" style="cursor: pointer; font-size: 1.1rem; margin-left: 10px;">
+                                        <i class="fas fa-shopping-bag" style="color: #FF9800;"></i> <strong>À récupérer</strong>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="modelivraison" id="aLivrer" value="aLivrer" required style="width: 20px; height: 20px; cursor: pointer;">
+                                    <label class="form-check-label" for="aLivrer" style="cursor: pointer; font-size: 1.1rem; margin-left: 10px;">
+                                        <i class="fas fa-motorcycle" style="color: #2196F3;"></i> <strong>À livrer</strong>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne Droite: Résumé -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-lg" style="position: sticky; top: 20px;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%); border: none; padding: 20px;">
+                        <h5 class="text-white mb-0">
+                            <i class="fas fa-receipt"></i> Résumé Commande
+                        </h5>
+                    </div>
+                    <div class="card-body" style="padding: 25px;">
+                        <!-- Burger -->
+                        <div class="d-flex justify-content-between mb-3 pb-3" style="border-bottom: 1px solid #eee;">
+                            <div>
+                                <p class="mb-1"><strong>@Model.Nom</strong></p>
+                                <small class="text-muted">Quantité: <span id="qtyDisplay">1</span></small>
+                            </div>
+                            <p class="mb-0"><strong>@Model.Prix.ToString("F2") XOF</strong></p>
+                        </div>
+
+                        <!-- Suppléments Sélectionnés -->
+                        <div id="resumeComplements" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+                            <!-- Mis à jour dynamiquement -->
+                        </div>
+
+                        <!-- Total -->
+                        <div class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #F4511E;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Total:</h5>
+                                <h4 class="mb-0" style="color: #F4511E;">
+                                    <span id="totalPrice">@Model.Prix.ToString("F2")</span> XOF
+                                </h4>
+                            </div>
+                        </div>
+
+                        <!-- Quantité -->
+                        <div class="mb-4">
+                            <label for="quantite" class="form-label fw-bold">Quantité:</label>
+                            <div class="input-group">
+                                <button class="btn btn-outline-secondary" type="button" id="decreaseQty">−</button>
+                                <input type="number" id="quantite" class="form-control text-center" value="1" min="1" max="99" required>
+                                <button class="btn btn-outline-secondary" type="button" id="increaseQty">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Boutons d'Action -->
+                        <div class="d-grid gap-2">
+                            <button type="button" id="btnAjouterPanier" class="btn btn-lg" style="background: linear-gradient(135deg, #F4511E 0%, #FF9800 100%); color: white; border: none; font-weight: bold; padding: 15px;">
+                                <i class="fas fa-shopping-cart"></i> Ajouter au panier
+                            </button>
+                            <a href="@Url.Action("Burgers", "Produit")" class="btn btn-outline-secondary btn-lg" style="font-weight: bold;">
+                                <i class="fas fa-arrow-left"></i> Retour
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Charger les compléments
+        async function loadComplements() {
+            try {
+                console.log('📥 Chargement des compléments...');
+                const response = await fetch('/Produit/ComplementsJson');
+                console.log('📡 Réponse API:', response.status, response.statusText);
+                
+                // Récupérer le texte brut d'abord
+                const text = await response.text();
+                console.log('📝 Réponse brute:', text.substring(0, 500)); // Premiers 500 caractères
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur API: ${response.status} - ${text}`);
+                }
+                
+                // Parser en JSON
+                const complements = JSON.parse(text);
+                console.log('✅ Compléments reçus:', complements);
+                
+                const complementsList = document.getElementById('complementsList');
+                complementsList.innerHTML = '';
+
+                if (!complements || complements.length === 0) {
+                    complementsList.innerHTML = '<p class="text-muted text-center col-12">Aucun complément disponible</p>';
+                    console.warn('⚠️ Aucun complément retourné');
+                    return;
+                }
+
+                complements.forEach(comp => {
+                    console.log(`🔄 Traitement du complément:`, comp);
+                    const html = `
+                        <div class="col-md-6">
+                            <div class="form-check" style="padding: 15px; border: 1px solid #eee; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+                                <input class="form-check-input complement-checkbox" type="checkbox" name="complements" value="${comp.id}" data-price="${comp.prix}" data-name="${comp.nom}" id="complement${comp.id}" style="width: 20px; height: 20px; cursor: pointer;">
+                                <label class="form-check-label" for="complement${comp.id}" style="cursor: pointer; margin-left: 10px; flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <strong>${comp.nom}</strong>
+                                        <span style="color: #F4511E; font-weight: bold;">+${comp.prix.toFixed(2)} XOF</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                    complementsList.innerHTML += html;
+                });
+
+                // Ajouter event listeners
+                document.querySelectorAll('.complement-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', updateTotal);
+                });
+                
+                console.log('✅ Compléments chargés avec succès');
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des compléments:', error);
+                const complementsList = document.getElementById('complementsList');
+                complementsList.innerHTML = `<p class="text-danger text-center col-12">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        // Mettre à jour le total
+        function updateTotal() {
+            const burgerId = @Model.Id;
+            const burgerPrice = @Model.Prix;
+            const quantity = parseInt(document.getElementById('quantite').value) || 1;
+            
+            let complementsTotal = 0;
+            let complementsHtml = '';
+
+            document.querySelectorAll('.complement-checkbox:checked').forEach(checkbox => {
+                const price = parseFloat(checkbox.dataset.price);
+                const name = checkbox.dataset.name;
+                complementsTotal += price;
+                
+                complementsHtml += `
+                    <div class="d-flex justify-content-between mb-2 pb-2" style="border-bottom: 1px solid #f0f0f0;">
+                        <small class="text-muted">${name}</small>
+                        <small class="text-muted">+${price.toFixed(2)} XOF</small>
+                    </div>
+                `;
+            });
+
+            document.getElementById('resumeComplements').innerHTML = complementsHtml;
+
+            const total = (burgerPrice + complementsTotal) * quantity;
+            document.getElementById('totalPrice').textContent = total.toFixed(2);
+        }
+
+        // Gestion quantité
+        document.getElementById('decreaseQty').addEventListener('click', () => {
+            const input = document.getElementById('quantite');
+            if (input.value > 1) {
+                input.value = parseInt(input.value) - 1;
+                document.getElementById('qtyDisplay').textContent = input.value;
+                updateTotal();
+            }
+        });
+
+        document.getElementById('increaseQty').addEventListener('click', () => {
+            const input = document.getElementById('quantite');
+            if (input.value < 99) {
+                input.value = parseInt(input.value) + 1;
+                document.getElementById('qtyDisplay').textContent = input.value;
+                updateTotal();
+            }
+        });
+
+        document.getElementById('quantite').addEventListener('change', () => {
+            document.getElementById('qtyDisplay').textContent = document.getElementById('quantite').value;
+            updateTotal();
+        });
+
+        // Charger les suppléments au chargement de la page
+        document.addEventListener('DOMContentLoaded', loadComplements);
+
+        // Ajouter au panier - Redirection correcte
+        document.getElementById('btnAjouterPanier').addEventListener('click', async () => {
+            const burgerId = @Model.Id;
+            const quantity = document.getElementById('quantite').value;
+            const modelivraison = document.querySelector('input[name="modelivraison"]:checked').value;
+            
+            // Récupérer les compléments sélectionnés
+            const complements = [];
+            document.querySelectorAll('.complement-checkbox:checked').forEach(checkbox => {
+                complements.push(checkbox.value);
+            });
+
+            // Envoyer au panier via POST
+            const formData = new FormData();
+            formData.append('id', burgerId);
+            formData.append('quantite', quantity);
+            formData.append('modelivraison', modelivraison);
+            complements.forEach((comp, index) => {
+                formData.append(`complements[${index}]`, comp);
+            });
+
+            try {
+                const response = await fetch('@Url.Action("AjouterBurger", "Panier")', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Redirection vers le panier
+                    window.location.href = '@Url.Action("Index", "Panier")';
+                } else {
+                    alert('❌ Erreur lors de l\'ajout au panier');
+                }
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                alert('❌ Erreur serveur');
+            }
+        });
+
+    </script>
+}

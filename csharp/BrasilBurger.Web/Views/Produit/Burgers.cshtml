@@ -1,0 +1,192 @@
+@model List<Burger>
+
+@{
+    ViewData["Title"] = "Nos Burgers";
+}
+
+<div class="container mt-5 mb-5">
+    <!-- Header -->
+    <div style="margin-bottom: 50px;">
+        <h1 style="font-size: 2.5rem; font-weight: 900; color: #333; margin-bottom: 10px;">
+            Notre Menu
+        </h1>
+        <p class="text-muted" style="font-size: 1.1rem;">Découvrez tous nos burgers artisanaux</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mb-4 mb-lg-0">
+            <div class="input-group input-group-lg" style="border-radius: 30px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                <span class="input-group-text" style="border: none; background: white;">
+                    <i class="fas fa-search" style="color: #F4511E;"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un burger..." style="border: none; padding: 15px 20px; font-size: 1rem;">
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <button class="btn btn-outline-secondary btn-lg w-100" data-bs-toggle="offcanvas" data-bs-target="#filtersOffcanvas" style="border-radius: 30px; font-weight: 700;">
+                <i class="fas fa-sliders-h me-2"></i>Filtres
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters Offcanvas -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="filtersOffcanvas" style="width: 350px;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title fw-bold">Filtres</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <!-- Végétarien Filter -->
+            <div class="mb-4">
+                <label class="form-check-label fw-bold mb-3">Régime</label>
+                <div class="form-check">
+                    <input class="form-check-input filter-checkbox" type="checkbox" id="vegetarianFilter" data-filter="vegetarian">
+                    <label class="form-check-label" for="vegetarianFilter">
+                        Végétarien uniquement
+                    </label>
+                </div>
+            </div>
+
+            <!-- Spice Level Filter -->
+            <div class="mb-4">
+                <label class="form-label fw-bold mb-3">Niveau de piment max: <span id="spiceValue">5</span></label>
+                <input type="range" class="form-range" id="spiceFilter" min="1" max="5" value="5" data-filter="spice">
+            </div>
+
+            <!-- Price Filter -->
+            <div class="mb-4">
+                <label class="form-label fw-bold mb-3">Prix max: <span id="priceValue">20</span>€</label>
+                <input type="range" class="form-range" id="priceFilter" min="5" max="30" value="20" data-filter="price">
+            </div>
+
+            <!-- Reset Filters -->
+            <button class="btn btn-outline-primary w-100" id="resetFilters">
+                <i class="fas fa-redo me-2"></i>Réinitialiser
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Count - REMOVED AS PER USER REQUEST -->
+
+    <!-- Burgers Grid -->
+    <div class="row" id="burgersContainer">
+        @foreach (var burger in Model)
+        {
+            <div class="col-lg-3 col-md-6 mb-4 burger-card" data-name="@burger.Nom" data-price="@burger.Prix">
+                <div class="card h-100" style="border: none; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                    <div style="position: relative; height: 250px; background: linear-gradient(135deg, #FFE0B2, #FFCC80);">
+                        @if (!string.IsNullOrEmpty(burger.Image))
+                        {
+                            <img src="@burger.Image" class="w-100 h-100" alt="@burger.Nom" style="object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                                <i class="fas fa-burger" style="font-size: 80px; color: #F4511E; opacity: 0.2;"></i>
+                            </div>
+                        }
+                        <span class="badge" style="position: absolute; top: 15px; right: 15px; background: #F4511E; color: white; padding: 8px 15px; border-radius: 20px; font-weight: 700;">Populaire</span>
+                    </div>
+                    <div class="card-body" style="padding: 20px;">
+                        <h5 class="card-title fw-bold" style="color: #333; margin-bottom: 10px;">@burger.Nom</h5>
+                        <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px; min-height: 40px;">Prêt à commander ? Personnalisez et passez votre commande</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 1.5rem; font-weight: 900; color: #F4511E;">@burger.Prix.ToString("F2") €</span>
+                            <a href="@Url.Action("DetailBurger", "Produit", new { id = burger.Id })" class="btn btn-sm" style="background: linear-gradient(135deg, #F4511E, #FF9800); color: white; border: none; border-radius: 20px; font-weight: 700; padding: 8px 16px;">
+                                Détails
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- No Results Message -->
+    <div id="noResults" style="display: none; text-align: center; padding: 60px 20px;">
+        <i class="fas fa-search" style="font-size: 80px; color: #ddd; margin-bottom: 20px; display: block;"></i>
+        <h4 class="text-muted">Aucun burger ne correspond à vos critères</h4>
+        <p class="text-muted">Essayez de modifier vos filtres</p>
+    </div>
+</div>
+
+<style>
+    .burger-card {
+        transition: all 0.3s ease;
+    }
+    
+    .burger-card:hover {
+        transform: translateY(-10px);
+    }
+    
+    .burger-card:hover .card {
+        box-shadow: 0 20px 50px rgba(244, 81, 30, 0.2) !important;
+    }
+
+    .offcanvas {
+        border-radius: 20px 0 0 20px;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keyup', filterBurgers);
+        document.getElementById('spiceFilter').addEventListener('input', (e) => {
+            document.getElementById('spiceValue').textContent = e.target.value;
+            filterBurgers();
+        });
+        document.getElementById('priceFilter').addEventListener('input', (e) => {
+            document.getElementById('priceValue').textContent = e.target.value;
+            filterBurgers();
+        });
+        document.getElementById('vegetarianFilter').addEventListener('change', filterBurgers);
+        document.getElementById('resetFilters').addEventListener('click', resetFilters);
+
+        function filterBurgers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const maxPrice = parseFloat(document.getElementById('priceFilter').value);
+            
+            const cards = document.querySelectorAll('.burger-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                const price = parseFloat(card.getAttribute('data-price'));
+
+                let matches = true;
+
+                // Search filter
+                if (searchTerm && !name.includes(searchTerm)) {
+                    matches = false;
+                }
+
+                // Price filter
+                if (price > maxPrice) {
+                    matches = false;
+                }
+
+                card.style.display = matches ? 'block' : 'none';
+                if (matches) visibleCount++;
+            });
+
+            // Show/hide no results message
+            if (visibleCount === 0) {
+                document.getElementById('noResults').style.display = 'block';
+            } else {
+                document.getElementById('noResults').style.display = 'none';
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('spiceFilter').value = '5';
+            document.getElementById('priceFilter').value = '20';
+            document.getElementById('vegetarianFilter').checked = false;
+            document.getElementById('spiceValue').textContent = '5';
+            document.getElementById('priceValue').textContent = '20';
+            filterBurgers();
+        }
+    </script>
+}

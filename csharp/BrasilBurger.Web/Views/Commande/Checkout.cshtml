@@ -1,0 +1,181 @@
+@using BrasilBurger.Web.Controllers
+@model CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Passer la Commande";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Finaliser votre Commande</h1>
+
+    <div class="row">
+        <!-- Résumé du panier -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Résumé de votre Commande</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Type</th>
+                                    <th>Quantité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Panier)
+                                {
+                                    <tr>
+                                        <td>@item.IdProduit</td>
+                                        <td><span class="badge bg-secondary">@item.TypeProduit</span></td>
+                                        <td>@item.Quantite</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire d'adresse et livraison -->
+            <form method="post" asp-action="ValiderCommande">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Adresse de Livraison</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="idZone" class="form-label">Zone *</label>
+                            <select id="idZone" name="idZone" class="form-select" required>
+                                <option value="">-- Sélectionnez une zone --</option>
+                                @foreach (var zone in Model.Zones)
+                                {
+                                    <option value="@zone.Id">@zone.Nom</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="idQuartier" class="form-label">Quartier *</label>
+                            <select id="idQuartier" name="idQuartier" class="form-select" required>
+                                <option value="">-- Sélectionnez d'abord une zone --</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="adresseLivraison" class="form-label">Adresse Complète *</label>
+                            <textarea id="adresseLivraison" name="adresseLivraison" class="form-control" rows="3" placeholder="Votre adresse précise" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes Spéciales (Optionnel)</label>
+                            <textarea id="notes" name="notes" class="form-control" rows="2" placeholder="Ajouter des notes pour le livreur"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Livreur</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="idLivreur" class="form-label">Sélectionnez un Livreur *</label>
+                            <select id="idLivreur" name="idLivreur" class="form-select" required>
+                                <option value="">-- Sélectionnez un livreur --</option>
+                                @foreach (var livreur in Model.Livreurs)
+                                {
+                                    <option value="@livreur.Id">@livreur.Nom - @livreur.Telephone</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Informations Client</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="idClient" class="form-label">ID Client *</label>
+                            <input type="number" id="idClient" name="idClient" class="form-control" placeholder="Votre ID client" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a href="@Url.Action("Index", "Panier")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour au Panier
+                    </a>
+                    <button type="submit" class="btn btn-success flex-grow-1">
+                        <i class="fas fa-check"></i> Confirmer la Commande
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Récapitulatif tarif -->
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Récapitulatif Tarif</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Sous-total:</span>
+                        <strong id="subtotal-checkout">0.00 XOF</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                        <span>Frais de Livraison:</span>
+                        <strong id="delivery-fee">À déterminer</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <h6>Total:</h6>
+                        <h6><strong class="text-success" id="total-checkout">0.00 XOF</strong></h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Charger les quartiers selon la zone sélectionnée
+        document.getElementById('idZone').addEventListener('change', function () {
+            const zoneId = this.value;
+            const quartierSelect = document.getElementById('idQuartier');
+
+            quartierSelect.innerHTML = '<option value="">-- Sélectionnez un quartier --</option>';
+
+            if (zoneId) {
+                @{
+                    var zonesJson = System.Text.Json.JsonSerializer.Serialize(
+                        Model.Zones.Select(z => new { z.Id, z.Nom, Quartiers = z.Quartiers.Select(q => new { q.Id, q.Nom }) })
+                    );
+                }
+                const zones = @Html.Raw(zonesJson);
+                console.log('📍 Zones chargées:', zones);
+                
+                const zone = zones.find(z => z.Id == zoneId || z.id == zoneId);
+                console.log('🔍 Zone sélectionnée:', zone);
+
+                if (zone && zone.Quartiers && zone.Quartiers.length > 0) {
+                    zone.Quartiers.forEach(q => {
+                        const option = document.createElement('option');
+                        option.value = q.Id;
+                        option.textContent = q.Nom;
+                        quartierSelect.appendChild(option);
+                    });
+                    console.log(`✅ ${zone.Quartiers.length} quartiers ajoutés`);
+                } else {
+                    console.warn('⚠️ Aucun quartier trouvé pour cette zone');
+                }
+            }
+        });
+    </script>
+}

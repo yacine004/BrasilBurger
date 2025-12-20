@@ -1,0 +1,133 @@
+@model Commande
+
+@{
+    ViewData["Title"] = "Suivi de Commande";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Suivi de Commande #@Model.Id</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Statut de Livraison</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Livraison != null)
+                    {
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-badge">
+                                    <i class="fas fa-truck text-info" style="font-size: 32px;"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <h5 class="mb-1">En cours de livraison</h5>
+                                </div>
+                                <span class="badge bg-secondary">@Model.Livraison?.Livreur?.Nom</span>
+                            </div>
+
+                            <div class="alert alert-light">
+                                <strong>Contact Livreur:</strong> @Model.Livraison?.Livreur?.Telephone
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Aucune information de livraison disponible.</p>
+                    }
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Statut du Paiement</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Paiement != null)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <strong>Montant:</strong>
+                                <p>@Model.Paiement.Montant.ToString("F2") XOF</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>Statut:</strong>
+                                <p>
+                                    <span class="badge bg-success">Payée</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-6">
+                                <strong>Méthode:</strong>
+                                <p>@Model.Paiement.Mode</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <strong>Date:</strong>
+                                <p>@Model.Paiement.Date.ToString("dd/MM/yyyy HH:mm")</p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Aucune information de paiement disponible.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Informations Commande</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>N° Commande:</strong>
+                        <p>#@Model.Id</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Date Commande:</strong>
+                        <p>@Model.Date.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Statut:</strong>
+                        <p>
+                            @if (Model.Etat == "Livrée")
+                            {
+                                <span class="badge bg-success">Livrée</span>
+                            }
+                            else if (Model.Etat == "En cours")
+                            {
+                                <span class="badge bg-warning">En cours</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info">@Model.Etat</span>
+                            }
+                        </p>
+                    </div>
+                    <div class="mb-3 pb-3 border-bottom">
+                        <strong>Client:</strong>
+                        <p>@Model.Client?.Nom @Model.Client?.Prenom</p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Mode))
+                    {
+                        <div class="alert alert-light">
+                            <strong>Notes:</strong>
+                            <p class="mb-0">@Model.Mode</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="@Url.Action("MesCommandes", "Client")" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à mes Commandes
+        </a>
+    </div>
+</div>

@@ -1,0 +1,191 @@
+@{
+    ViewData["Title"] = "Gestion de l'Image Hero";
+}
+
+<div style="background: linear-gradient(135deg, #F4511E 0%, #FF9800 100%); padding: 40px 0; margin-bottom: 40px;">
+    <div class="container">
+        <h1 class="text-white mb-0" style="font-size: 2.5rem; font-weight: bold;">
+            <i class="fas fa-image"></i> Gestion de l'Image Hero
+        </h1>
+        <p class="text-light mt-2">Téléchargez l'image principale de la page d'accueil</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body" style="padding: 40px;">
+                    
+                    <!-- Aperçu de l'image actuelle -->
+                    <div class="mb-5 text-center">
+                        <h5 class="mb-3" style="font-weight: bold; color: #333;">Aperçu Actuel</h5>
+                        <div id="heroPreview" style="position: relative; height: 400px; background: #f0f0f0; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <div id="placeholderPreview" style="text-align: center;">
+                                <i class="fas fa-image" style="font-size: 100px; color: #ddd;"></i>
+                                <p class="text-muted mt-3">Pas d'image actuellement</p>
+                            </div>
+                            <img id="heroImage" src="" alt="Hero" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                        </div>
+                    </div>
+
+                    <!-- Formulaire d'upload -->
+                    <form id="heroForm" enctype="multipart/form-data" style="display: none;">
+                        <input type="file" id="imageFile" name="image" accept="image/*" style="display: none;">
+                    </form>
+
+                    <!-- Boutons -->
+                    <div class="d-grid gap-3">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="document.getElementById('imageFile').click()" style="background: linear-gradient(135deg, #F4511E 0%, #FF9800 100%); border: none; font-weight: bold;">
+                            <i class="fas fa-upload"></i> Choisir une Image
+                        </button>
+                        <button type="button" class="btn btn-success btn-lg" id="uploadBtn" disabled style="background: #4CAF50; border: none; font-weight: bold;">
+                            <i class="fas fa-check"></i> Confirmer l'Upload
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg" id="deleteBtn" style="border: none; font-weight: bold; display: none;">
+                            <i class="fas fa-trash"></i> Supprimer l'Image
+                        </button>
+                    </div>
+
+                    <!-- Statut -->
+                    <div id="statusAlert" style="margin-top: 20px; display: none;">
+                        <div class="alert" id="statusAlertContent"></div>
+                    </div>
+
+                    <!-- Recommandations -->
+                    <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #F4511E;">
+                        <h6 style="font-weight: bold; color: #333; margin-bottom: 10px;">
+                            <i class="fas fa-info-circle"></i> Recommandations
+                        </h6>
+                        <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 0.95rem;">
+                            <li>Dimension recommandée: <strong>1920x800 px</strong> (16:9)</li>
+                            <li>Formats acceptés: <strong>JPG, PNG, WebP</strong></li>
+                            <li>Taille max: <strong>5 MB</strong></li>
+                            <li>L'image sera optimisée automatiquement</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Charger l'image actuelle au chargement
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            const response = await fetch('@Url.Action("GetHeroImage", "Home")');
+            const result = await response.json();
+            
+            if (result.imageUrl) {
+                console.log('✅ Image hero trouvée:', result.imageUrl);
+                const img = document.getElementById('heroImage');
+                img.src = result.imageUrl;
+                img.style.display = 'block';
+                document.getElementById('placeholderPreview').style.display = 'none';
+                document.getElementById('deleteBtn').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('⚠️ Erreur lors du chargement:', error);
+        }
+    });
+
+    // Gérer la sélection d'image
+    document.getElementById('imageFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            console.log('📁 Fichier sélectionné:', file.name);
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const preview = document.getElementById('heroImage');
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+                document.getElementById('placeholderPreview').style.display = 'none';
+                document.getElementById('uploadBtn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Upload l'image
+    document.getElementById('uploadBtn').addEventListener('click', async function() {
+        const fileInput = document.getElementById('imageFile');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('⚠️ Sélectionnez une image');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        console.log('📤 Upload de l\'image hero...');
+        document.getElementById('uploadBtn').disabled = true;
+        document.getElementById('statusAlert').style.display = 'block';
+        document.getElementById('statusAlertContent').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Upload en cours...';
+        document.getElementById('statusAlertContent').parentElement.className = 'alert alert-info';
+
+        try {
+            const response = await fetch('@Url.Action("UploadHeroImage", "Home")', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                console.log('✅ Image uploadée:', result.imageUrl);
+                document.getElementById('statusAlertContent').innerHTML = '<i class="fas fa-check-circle"></i> Image uploadée avec succès!';
+                document.getElementById('statusAlertContent').parentElement.className = 'alert alert-success';
+                document.getElementById('deleteBtn').style.display = 'block';
+                document.getElementById('uploadBtn').disabled = true;
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            console.error('❌ Erreur:', error);
+            document.getElementById('statusAlertContent').innerHTML = `<i class="fas fa-exclamation-circle"></i> Erreur: ${error.message}`;
+            document.getElementById('statusAlertContent').parentElement.className = 'alert alert-danger';
+            document.getElementById('uploadBtn').disabled = false;
+        }
+    });
+
+    // Supprimer l'image
+    document.getElementById('deleteBtn').addEventListener('click', async function() {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer l\'image hero?')) return;
+
+        console.log('🗑️ Suppression de l\'image hero...');
+        document.getElementById('statusAlert').style.display = 'block';
+        document.getElementById('statusAlertContent').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression en cours...';
+        document.getElementById('statusAlertContent').parentElement.className = 'alert alert-info';
+
+        try {
+            const response = await fetch('@Url.Action("DeleteHeroImage", "Home")', {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                console.log('✅ Image supprimée');
+                document.getElementById('statusAlertContent').innerHTML = '<i class="fas fa-check-circle"></i> Image supprimée avec succès!';
+                document.getElementById('statusAlertContent').parentElement.className = 'alert alert-success';
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            console.error('❌ Erreur:', error);
+            document.getElementById('statusAlertContent').innerHTML = `<i class="fas fa-exclamation-circle"></i> Erreur: ${error.message}`;
+            document.getElementById('statusAlertContent').parentElement.className = 'alert alert-danger';
+        }
+    });
+</script>

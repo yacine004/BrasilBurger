@@ -1,0 +1,49 @@
+@model List<Menu>
+
+@{
+    ViewData["Title"] = "Menus";
+}
+
+<div class="container mt-5">
+    <h1 class="mb-4">Nos Menus</h1>
+
+    <div class="row">
+        @foreach (var menu in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    @if (!string.IsNullOrEmpty(menu.Image))
+                    {
+                        <img src="@menu.Image" class="card-img-top" alt="@menu.Nom" style="height: 250px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <span class="text-muted">Sans image</span>
+                        </div>
+                    }
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@menu.Nom</h5>
+
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <span class="h5 text-primary mb-0">Menu</span>
+                        </div>
+
+                        <div class="mt-3 d-flex gap-2">
+                            <a href="@Url.Action("DetailMenu", "Produit", new { id = menu.Id })" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                Détails
+                            </a>
+                            <form asp-action="AjouterMenu" asp-controller="Panier" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@menu.Id" />
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-shopping-cart"></i> Ajouter
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

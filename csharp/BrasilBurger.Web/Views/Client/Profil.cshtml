@@ -1,0 +1,87 @@
+@model Client
+
+@{
+    ViewData["Title"] = "Mon Profil";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Mon Profil</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="MettreAJourProfil">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nom" class="form-label">Nom</label>
+                                <input type="text" name="nom" id="nom" class="form-control" value="@Model.Nom" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="prenom" class="form-label">Prénom</label>
+                                <input type="text" name="prenom" id="prenom" class="form-control" value="@Model.Prenom" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email (Non modifiable)</label>
+                            <input type="email" class="form-control" value="@Model.Email" disabled>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="telephone" class="form-label">Téléphone</label>
+                            <input type="tel" name="telephone" id="telephone" class="form-control" value="@Model.Telephone">
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer les modifications
+                            </button>
+                            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Informations du Compte</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Date d'Inscription:</strong>
+                            <p>Inscription: Pas de date disponible</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Statut:</strong>
+                            <p><span class="badge bg-success">Actif</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("MesCommandes", "Client")" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-shopping-bag"></i> Mes Commandes
+                    </a>
+                    <a href="@Url.Action("Index", "Produit", new { action = "Burgers" })" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-utensils"></i> Continuer vos Achats
+                    </a>
+                    <a href="@Url.Action("Logout", "Client")" class="btn btn-outline-danger w-100">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

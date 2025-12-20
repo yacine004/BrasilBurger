@@ -1,0 +1,300 @@
+@model List<Complement>
+
+@{
+    ViewData["Title"] = "Gestion des Images - Compléments";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">
+                <i class="fas fa-image"></i> Gestion des Images - Compléments
+            </h1>
+            <p class="text-muted">Uploadez les images pour chaque complément. Les images seront stockées sur Cloudinary.</p>
+
+            <!-- Toast Container -->
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                <div id="uploadToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong class="me-auto">Notification</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body" id="toastMessage">
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Complément</th>
+                            <th>Image Actuelle</th>
+                            <th>Upload</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var complement in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@complement.Nom</strong>
+                                    <br/>
+                                    <small class="text-muted">ID: @complement.Id</small>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(complement.Image))
+                                    {
+                                        <img src="@complement.Image" alt="@complement.Nom" style="max-height: 80px; border-radius: 8px; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#imageModal@complement.Id" />
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Pas d'image</span>
+                                    }
+                                </td>
+                                <td>
+                                    <form id="form@complement.Id" class="upload-form" enctype="multipart/form-data">
+                                        <div class="input-group">
+                                            <input type="file" id="file@complement.Id" class="form-control" name="file" accept="image/*" style="display: none;" required>
+                                            <button class="btn btn-secondary btn-browse" type="button" title="Sélectionner une image">
+                                                <i class="fas fa-folder-open" aria-hidden="true"></i> Parcourir
+                                            </button>
+                                            <span id="filename@complement.Id" class="d-inline-block ms-2" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+                                            <button class="btn btn-primary upload-btn" type="button" data-complement-id="@complement.Id" title="Uploader l'image vers Cloudinary">
+                                                <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i> Upload
+                                            </button>
+                                        </div>
+                                    </form>
+                                </td>
+                                <td>
+                                    <div class="spinner-upload-@complement.Id" style="display:none;">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                            <span class="visually-hidden">Chargement...</span>
+                                        </div>
+                                    </div>
+                                    <span class="status-@complement.Id"></span>
+                                </td>
+                            </tr>
+
+                            <!-- Modal pour voir l'image en grand -->
+                            <div class="modal fade" id="imageModal@complement.Id" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">@complement.Nom</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            @if (!string.IsNullOrEmpty(complement.Image))
+                                            {
+                                                <img src="@complement.Image" alt="@complement.Nom" style="max-width: 100%; border-radius: 8px;" />
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .upload-form {
+        width: 100%;
+    }
+
+    .input-group {
+        gap: 5px;
+    }
+
+    .upload-btn {
+        white-space: nowrap;
+    }
+
+    .status-success {
+        color: #28a745;
+        font-weight: bold;
+        display: inline-block;
+    }
+
+    .status-error {
+        color: #dc3545;
+        font-weight: bold;
+        display: inline-block;
+    }
+
+    .toast {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .toast.success {
+        background-color: #d4edda !important;
+        border-color: #28a745 !important;
+    }
+
+    .toast.success .toast-header {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .toast.error {
+        background-color: #f8d7da !important;
+        border-color: #dc3545 !important;
+    }
+
+    .toast.error .toast-header {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Toast notifications helper
+        function showNotification(message, type = 'info') {
+            const toast = document.getElementById('uploadToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            // Définir le type
+            toast.classList.remove('success', 'error');
+            if (type === 'success') {
+                toast.classList.add('success');
+            } else if (type === 'error') {
+                toast.classList.add('error');
+            }
+            
+            toastMessage.textContent = message;
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+
+        // Gestion du clic sur "Parcourir" pour ouvrir le file picker
+        document.addEventListener('click', (e) => {
+            const browseBtn = e.target.closest('.btn-browse');
+            if (!browseBtn) return;
+            
+            // Trouver l'input file dans le formulaire parent
+            const form = browseBtn.closest('form');
+            if (!form) {
+                console.error('❌ Form non trouvée');
+                return;
+            }
+            
+            const fileInput = form.querySelector('input[type="file"]');
+            if (!fileInput) {
+                console.error('❌ Input file non trouvée');
+                return;
+            }
+            
+            console.log('📁 Ouverture du file picker');
+            fileInput.click();
+        });
+
+        // Mettre à jour le nom du fichier sélectionné
+        document.addEventListener('change', (e) => {
+            if (e.target.type === 'file') {
+                const fileInput = e.target;
+                const form = fileInput.closest('form');
+                
+                if (form && fileInput.files.length > 0) {
+                    const filenameDisplay = form.querySelector('[id^="filename"]');
+                    if (filenameDisplay) {
+                        filenameDisplay.textContent = fileInput.files[0].name;
+                        console.log('📄 Fichier sélectionné:', fileInput.files[0].name);
+                    }
+                }
+            }
+        });
+
+        // Gestion des uploads d'images
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.upload-btn');
+            if (!btn) return;
+            
+            e.preventDefault();
+            
+            const form = btn.closest('form');
+            if (!form) {
+                console.error('❌ Form non trouvée');
+                showNotification('❌ Erreur: Formulaire non trouvé', 'error');
+                return;
+            }
+            
+            const fileInput = form.querySelector('input[name="file"]');
+            if (!fileInput || !fileInput.files.length) {
+                showNotification('❌ Veuillez sélectionner une image', 'error');
+                return;
+            }
+
+            const complementId = btn.getAttribute('data-complement-id');
+            console.log('🔘 Bouton cliqué - Complément ID:', complementId);
+
+            const fileName = fileInput.files[0].name;
+            const fileSize = (fileInput.files[0].size / 1024).toFixed(2);
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const spinner = document.querySelector(`.spinner-upload-${complementId}`);
+            const status = document.querySelector(`.status-${complementId}`);
+            const tableRow = btn.closest('tr');
+            const complementNameElement = tableRow.querySelector('td strong');
+            const complementName = complementNameElement ? complementNameElement.textContent : 'ce complément';
+            
+            if (spinner) spinner.style.display = 'inline-block';
+            if (status) status.textContent = '';
+            btn.disabled = true;
+
+            console.log(`🚀 Début upload - Complément ID: ${complementId}, Fichier: ${fileName} (${fileSize}KB)`);
+            showNotification(`⏳ Upload en cours pour "${fileName}"...`, 'info');
+
+            try {
+                const response = await fetch(`/api/image/upload-complement-image/${complementId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                console.log('📡 Réponse serveur:', data);
+
+                if (response.ok) {
+                    if (status) {
+                        status.textContent = '✅ Succès!';
+                        status.className = `status-${complementId} status-success`;
+                    }
+                    fileInput.value = '';
+                    
+                    showNotification(`✅ Image de "${complementName}" uploadée avec succès!`, 'success');
+                    console.log('✅ Upload réussi!');
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    if (status) {
+                        status.textContent = `❌ ${data.message}`;
+                        status.className = `status-${complementId} status-error`;
+                    }
+                    showNotification(`❌ Erreur: ${data.message}`, 'error');
+                    console.error('❌ Erreur upload:', data.message);
+                }
+            } catch (error) {
+                if (status) {
+                    status.textContent = '❌ Erreur serveur';
+                    status.className = `status-${complementId} status-error`;
+                }
+                showNotification(`❌ Erreur serveur: ${error.message}`, 'error');
+                console.error('❌ Exception:', error);
+            } finally {
+                if (spinner) spinner.style.display = 'none';
+                btn.disabled = false;
+            }
+        });
+    </script>
+}

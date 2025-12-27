@@ -1,0 +1,26 @@
+###> symfony/framework-bundle ###
+/.env.local
+/.env.*.local
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
+
+###> IDEs ###
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+###< IDEs ###
+
+###> Application ###
+.env.test
+.env.prod
+###< Application ###

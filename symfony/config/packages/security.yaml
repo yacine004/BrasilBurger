@@ -1,0 +1,21 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    providers:
+        users_in_memory: { memory: null }
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            lazy: true
+            provider: users_in_memory
+            http_basic: ~
+
+    access_control:
+        - { path: ^/api/statistiques, roles: ROLE_MANAGER }
+        - { path: ^/api/commandes, roles: ROLE_MANAGER }
+        - { path: ^/api/livraisons, roles: ROLE_MANAGER }
+        - { path: ^/, roles: PUBLIC_ACCESS }

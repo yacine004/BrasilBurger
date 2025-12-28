@@ -20,12 +20,12 @@ RUN composer install --no-dev --optimize-autoloader
 RUN php bin/console cache:clear --env=prod || true
 
 # Runtime stage
-FROM php:8.4-apache-alpine
+FROM php:8.4-apache
 
 WORKDIR /app
 
 # Installer les extensions PHP et autres dépendances
-RUN apk add --no-cache postgresql-client postgresql-libs libpq-dev
+RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client libpq-dev && rm -rf /var/lib/apt/lists/*
 RUN docker-php-ext-install pdo pdo_pgsql
 
 # Activer les modules Apache nécessaires

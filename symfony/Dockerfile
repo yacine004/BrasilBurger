@@ -37,36 +37,22 @@ COPY --from=builder /app .
 # Copier la configuration PHP personnalisée si elle existe
 RUN if [ -f symfony/php.ini ]; then cp symfony/php.ini /usr/local/etc/php/conf.d/custom.ini; fi
 
-# Configuration Apache - VirtualHost
-RUN echo '<VirtualHost *:8080>\n\
-    ServerName brasil-burger.onrender.com\n\
-    DocumentRoot /app/public\n\
-    <Directory /app/public>\n\
-        Options Indexes FollowSymLinks\n\
-        AllowOverride All\n\
-        Require all granted\n\
-        <IfModule mod_rewrite.c>\n\
-            RewriteEngine On\n\
-            RewriteCond %{REQUEST_FILENAME} !-f\n\
-            RewriteCond %{REQUEST_FILENAME} !-d\n\
-            RewriteRule ^(.*)$ /index.php [QSA,L]\n\
-        </IfModule>\n\
-    </Directory>\n\
-</VirtualHost>' > /etc/apache2/sites-available/default.conf && \
-    a2ensite default.conf && \
-    a2dissite 000-default.conf
-
-# Créer et définir les permissions
+# Créer et définir les permissions - Rendre TOUT accessible
 RUN mkdir -p /app/var/cache /app/var/log && \
     chown -R www-data:www-data /app && \
-    chmod -R 755 /app/public && \
-    chmod -R 755 /app/var
+    chmod -R 777 /app/var && \
+    chmod -R 755 /app && \
+    chmod -R 755 /app/public
 
 # Exposer le port sur 8080 pour Render
 EXPOSE 8080
 
 # Configuration pour Render - Écouter sur le port 8080
-RUN sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf
+RUN sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf && \
+    sed -i 's/DocumentRoot.*$/DocumentRoot \/app\/public/' /etc/apache2/sites-available/000-default.conf
+
+# Activer les modules requis
+RUN a2enmod headers && a2enmod env
 
 # Commande de démarrage
 CMD ["apache2-foreground"]

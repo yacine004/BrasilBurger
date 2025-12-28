@@ -14,8 +14,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY symfony/ .
 
 # Installer les dépendances et nettoyer le cache
-RUN composer install --no-dev --optimize-autoloader && \
-    php bin/console cache:clear --env=prod || true
+RUN composer install --no-dev --optimize-autoloader
+
+# Générer le cache Symfony pour la production
+RUN php bin/console cache:clear --env=prod && \
+    php bin/console cache:warmup --env=prod || true
 
 # Runtime stage
 FROM php:8.4-apache
@@ -33,11 +36,6 @@ RUN a2enmod rewrite headers env
 
 # Copier le code depuis le builder
 COPY --from=builder /app .
-
-# Copier la configuration PHP personnalisée si elle existe
-RUN if [ -f symfony/php.ini ]; then \
-        cp symfony/php.ini /usr/local/etc/php/conf.d/custom.ini; \
-    fi
 
 # Changer le port Apache de 80 à 8080
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf

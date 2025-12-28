@@ -34,8 +34,8 @@ RUN a2enmod rewrite
 # Copier le code depuis le builder
 COPY --from=builder /app .
 
-# Copier la configuration PHP personnalisée
-COPY symfony/php.ini /usr/local/etc/php/conf.d/custom.ini
+# Copier la configuration PHP personnalisée (si elle existe)
+COPY symfony/php.ini /usr/local/etc/php/conf.d/custom.ini || true
 
 # Configuration Apache - VirtualHost
 RUN echo '<VirtualHost *:80>\n\
@@ -52,22 +52,30 @@ RUN echo '<VirtualHost *:80>\n\
             RewriteRule ^(.*)$ /index.php [QSA,L]\n\
         </IfModule>\n\
     </Directory>\n\
-</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
-
-# Désactiver les sites par défaut
-RUN a2dissite 000-default.conf
-RUN a2ensite 000-default.conf
+</VirtualHost>' > /etc/apache2/sites-available/default.conf && \
+    a2ensite default.conf && \
+    a2dissite 000-default.conf
 
 # Définir les permissions
-RUN chown -R www-data:www-data /app/var
-RUN chmod -R 755 /app/var
+RUN chown -R www-data:www-data /app/var && \
+    chmod -R 755 /app/var && \
+    mkdir -p /app/var/cache /app/var/log && \
+    chown -R www-data:www-data /app/var/cache /app/var/log
 
-# Créer le répertoire cache s'il n'existe pas
-RUN mkdir -p /app/var/cache /app/var/log
-RUN chown -R www-data:www-data /app/var/cache /app/var/log
+# Exposer le port sur 8080 pour Render
+EXPOSE 8080
 
-# Exposer le port
-EXPOSE 80
+# Configuration pour Render
+ENV APACHE_RUN_USER=www-data \
+    APACHE_RUN_GROUP=www-data \
+    APACHE_LOCK_DIR=/var/run/apache2 \
+    APACHE_PID_FILE=/var/run/apache2/apache2.pid \
+    APACHE_RUN_DIR=/var/run/apache2 \
+    APACHE_LOG_DIR=/var/log/apache2 \
+    LANG=C
+
+# Port Render
+RUN sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf
 
 # Commande de démarrage
 CMD ["apache2-foreground"]

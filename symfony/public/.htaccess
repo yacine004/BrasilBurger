@@ -1,14 +1,14 @@
-<?php
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
 
-$_SERVER += $_ENV;
-$_SERVER['APP_ENV'] = $_ENV['APP_ENV'] = ($_SERVER['APP_ENV'] ?? $_ENV['APP_ENV'] ?? 'dev');
-$_SERVER['APP_DEBUG'] = $_SERVER['APP_DEBUG'] ?? $_ENV['APP_DEBUG'] ?? 'prod' !== $_SERVER['APP_ENV'];
-$_SERVER['APP_DEBUG'] = $_ENV['APP_DEBUG'] = (int)$_SERVER['APP_DEBUG'] || filter_var($_SERVER['APP_DEBUG'], FILTER_VALIDATE_BOOLEAN) ? '1' : '0';
+    # Si le fichier ou le répertoire n'existe pas, redirige vers index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
 
-if ($_SERVER['APP_DEBUG']) {
-    umask(0000);
-}
-
-set_time_limit(0);
-
-require_once dirname(__DIR__).'/config/bootstrap.php';
+# Activer gzip
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>

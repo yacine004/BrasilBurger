@@ -57,6 +57,10 @@ RUN a2dissite 000-default.conf 2>/dev/null || true && \
     a2dissite default-ssl 2>/dev/null || true && \
     a2ensite 000-default.conf
 
+# Rediriger les logs Apache vers stdout/stderr pour Render
+RUN ln -sf /dev/stdout /var/log/apache2/access.log && \
+    ln -sf /dev/stderr /var/log/apache2/error.log
+
 # Créer le répertoire var et définir les permissions
 RUN mkdir -p /app/var/cache /app/var/log && \
     chown -R www-data:www-data /app && \

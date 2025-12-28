@@ -42,17 +42,26 @@ RUN if [ -f symfony/php.ini ]; then \
 # Changer le port Apache de 80 à 8080
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf
 
-# Configurer le DocumentRoot pour Symfony
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /app/public|g' /etc/apache2/sites-available/000-default.conf
+# Supprimer la configuration par défaut et en créer une nouvelle pour Symfony
+RUN rm -f /etc/apache2/sites-available/000-default.conf && \
+    echo '<VirtualHost *:8080>' > /etc/apache2/sites-available/000-default.conf && \
+    echo '  ServerName brasil-burger.onrender.com' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '  DocumentRoot /app/public' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '  <Directory /app/public>' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '    Options Indexes FollowSymLinks' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '    AllowOverride All' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '    Require all granted' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '  </Directory>' >> /etc/apache2/sites-available/000-default.conf && \
+    echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
+
+# Vérifier que la config est correcte
+RUN a2ensite 000-default.conf && a2dissite 000-default.conf || true
 
 # Créer le répertoire var et définir les permissions
 RUN mkdir -p /app/var/cache /app/var/log && \
     chown -R www-data:www-data /app && \
     chmod -R 755 /app/public && \
     chmod -R 777 /app/var
-
-# Configurer le Directory pour /app/public dans Apache
-RUN sed -i '/<Directory \/var\/www\/html>/,/<\/Directory>/c\<Directory /app/public>\n    Options Indexes FollowSymLinks\n    AllowOverride All\n    Require all granted\n</Directory>' /etc/apache2/sites-available/000-default.conf
 
 # Exposer le port 8080 pour Render
 EXPOSE 8080

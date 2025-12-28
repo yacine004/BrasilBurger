@@ -14,7 +14,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY symfony/ .
 
 # Installer les dépendances et nettoyer le cache
-RUN composer install --no-dev --optimize-autoloader
+RUN echo "Installing dependencies..." && \
+    composer install --no-dev --optimize-autoloader --no-interaction --no-scripts && \
+    echo "Verifying vendor/autoload.php..." && \
+    test -f vendor/autoload.php && echo "✅ vendor/autoload.php created" || (echo "❌ FAILURE: vendor/autoload.php not found" && exit 1)
 
 # Générer le cache Symfony pour la production
 RUN php bin/console cache:clear --env=prod && \
@@ -65,7 +68,10 @@ RUN ln -sf /dev/stdout /var/log/apache2/access.log && \
 RUN mkdir -p /app/var/cache /app/var/log && \
     chown -R www-data:www-data /app && \
     chmod -R 755 /app/public && \
-    chmod -R 777 /app/var
+    chmod -R 755 /app/vendor && \
+    chmod -R 777 /app/var && \
+    echo "Verifying installation..." && \
+    test -f /app/vendor/autoload.php && echo "✅ vendor/autoload.php exists in runtime" || (echo "❌ ERROR: vendor/autoload.php missing!" && exit 1)
 
 # Exposer le port 8080 pour Render
 EXPOSE 8080

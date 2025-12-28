@@ -56,11 +56,10 @@ RUN echo '<VirtualHost *:80>\n\
     a2ensite default.conf && \
     a2dissite 000-default.conf
 
-# Définir les permissions
-RUN chown -R www-data:www-data /app/var && \
-    chmod -R 755 /app/var && \
-    mkdir -p /app/var/cache /app/var/log && \
-    chown -R www-data:www-data /app/var/cache /app/var/log
+# Créer et définir les permissions
+RUN mkdir -p /app/var/cache /app/var/log && \
+    chown -R www-data:www-data /app/var && \
+    chmod -R 755 /app/var
 
 # Exposer le port sur 8080 pour Render
 EXPOSE 8080

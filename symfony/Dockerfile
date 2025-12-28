@@ -38,7 +38,7 @@ COPY --from=builder /app .
 RUN if [ -f symfony/php.ini ]; then cp symfony/php.ini /usr/local/etc/php/conf.d/custom.ini; fi
 
 # Configuration Apache - VirtualHost
-RUN echo '<VirtualHost *:80>\n\
+RUN echo '<VirtualHost *:8080>\n\
     ServerName brasil-burger.onrender.com\n\
     DocumentRoot /app/public\n\
     <Directory /app/public>\n\

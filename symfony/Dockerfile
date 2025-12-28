@@ -54,8 +54,10 @@ RUN rm -f /etc/apache2/sites-available/000-default.conf && \
     echo '  </Directory>' >> /etc/apache2/sites-available/000-default.conf && \
     echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
 
-# Vérifier que la config est correcte
-RUN a2ensite 000-default.conf && a2dissite 000-default.conf || true
+# S'assurer qu'aucun autre site n'est activé
+RUN a2dissite 000-default.conf 2>/dev/null || true && \
+    a2dissite default-ssl 2>/dev/null || true && \
+    a2ensite 000-default.conf
 
 # Créer le répertoire var et définir les permissions
 RUN mkdir -p /app/var/cache /app/var/log && \

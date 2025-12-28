@@ -58,22 +58,14 @@ RUN echo '<VirtualHost *:80>\n\
 
 # Créer et définir les permissions
 RUN mkdir -p /app/var/cache /app/var/log && \
-    chown -R www-data:www-data /app/var && \
+    chown -R www-data:www-data /app && \
+    chmod -R 755 /app/public && \
     chmod -R 755 /app/var
 
 # Exposer le port sur 8080 pour Render
 EXPOSE 8080
 
-# Configuration pour Render
-ENV APACHE_RUN_USER=www-data \
-    APACHE_RUN_GROUP=www-data \
-    APACHE_LOCK_DIR=/var/run/apache2 \
-    APACHE_PID_FILE=/var/run/apache2/apache2.pid \
-    APACHE_RUN_DIR=/var/run/apache2 \
-    APACHE_LOG_DIR=/var/log/apache2 \
-    LANG=C
-
-# Port Render
+# Configuration pour Render - Écouter sur le port 8080
 RUN sed -i 's/^Listen 80$/Listen 8080/' /etc/apache2/ports.conf
 
 # Commande de démarrage

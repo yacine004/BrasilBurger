@@ -1,0 +1,74 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Commandes - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>📦 Gestion des Commandes</h2>
+        <p style="color: var(--medium-gray); margin-bottom: 20px;">Consultez et gérez l'ensemble de vos commandes</p>
+        <a href="{{ path('app_commande_new') }}" class="btn btn-success">➕ Nouvelle Commande</a>
+    </div>
+
+    {% if commandes is empty %}
+        <div class="card text-center">
+            <p style="font-size: 16px; color: var(--medium-gray); padding: 40px 0;">
+                📭 Aucune commande trouvée.<br>
+                <a href="{{ path('app_commande_new') }}" style="color: var(--primary-color); text-decoration: underline;">Créer une nouvelle commande</a>
+            </p>
+        </div>
+    {% else %}
+        <div class="card" style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">ID</th>
+                        <th style="width: 20%;">Client</th>
+                        <th style="width: 18%;">Date</th>
+                        <th style="width: 15%;">État</th>
+                        <th style="width: 15%;">Montant</th>
+                        <th style="width: 12%;">Mode</th>
+                        <th style="width: 10%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                        <tr>
+                            <td><strong>#{{ commande.id }}</strong></td>
+                            <td>{{ commande.client.prenom }} {{ commande.client.nom }}</td>
+                            <td>{{ commande.date|date("d/m/Y H:i") }}</td>
+                            <td>
+                                {% if commande.etat == "Terminer" %}
+                                    <span style="background: #27ae60; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">✓ {{ commande.etat }}</span>
+                                {% elseif commande.etat == "Validée" %}
+                                    <span style="background: #3498db; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">⚡ {{ commande.etat }}</span>
+                                {% elseif commande.etat == "En cours" %}
+                                    <span style="background: #f39c12; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">⏳ {{ commande.etat }}</span>
+                                {% elseif commande.etat == "Annulée" %}
+                                    <span style="background: #e74c3c; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">✗ {{ commande.etat }}</span>
+                                {% else %}
+                                    <span style="background: #95a5a6; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ commande.etat }}</span>
+                                {% endif %}
+                            </td>
+                            <td><strong style="color: var(--primary-color);">{{ (commande.montant ?? 0)|number_format(0, ',', ' ') }} FCFA</strong></td>
+                            <td>
+                                {% if commande.mode == "À emporter" %}
+                                    📦 À emporter
+                                {% elseif commande.mode == "Livraison à domicile" %}
+                                    🚚 Livraison
+                                {% elseif commande.mode == "Sur place" %}
+                                    🪑 Sur place
+                                {% else %}
+                                    {{ commande.mode }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px; margin-right: 5px;">👁️ Voir</a>
+                                <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" class="btn" style="padding: 8px 12px; font-size: 12px;">✏️ Éditer</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

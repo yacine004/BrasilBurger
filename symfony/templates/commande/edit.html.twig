@@ -1,0 +1,38 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Modifier Commande - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>Modifier Commande #{{ commande.id }}</h2>
+        <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    <div class="card">
+        <form method="POST">
+            <div style="margin-bottom: 20px;">
+                <label for="etat" style="display: block; margin-bottom: 8px;"><strong>État de la Commande:</strong></label>
+                <select name="etat" id="etat" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">-- Sélectionner un état --</option>
+                    <option value="En attente de paiement" {% if commande.etat == "En attente de paiement" %}selected{% endif %}>En attente de paiement</option>
+                    <option value="Validée" {% if commande.etat == "Validée" %}selected{% endif %}>Validée</option>
+                    <option value="En cours" {% if commande.etat == "En cours" %}selected{% endif %}>En cours</option>
+                    <option value="Terminer" {% if commande.etat == "Terminer" %}selected{% endif %}>Terminée</option>
+                    <option value="Annulée" {% if commande.etat == "Annulée" %}selected{% endif %}>Annulée</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label for="mode" style="display: block; margin-bottom: 8px;"><strong>Mode de Livraison:</strong></label>
+                <select name="mode" id="mode" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">-- Sélectionner un mode --</option>
+                    <option value="Sur place" {% if commande.mode == "Sur place" %}selected{% endif %}>Sur place</option>
+                    <option value="À récupérer" {% if commande.mode == "À récupérer" %}selected{% endif %}>À récupérer</option>
+                    <option value="Livraison" {% if commande.mode == "Livraison" %}selected{% endif %}>Livraison</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success">💾 Enregistrer</button>
+        </form>
+    </div>
+{% endblock %}

@@ -2,77 +2,69 @@
 
 namespace App\Entity;
 
+use App\Repository\CommandeMenuRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
-#[ORM\Table(name: 'commande_menu')]
+#[ORM\Entity(repositoryClass: CommandeMenuRepository::class)]
+#[ORM\Table(name: "commande_menu")]
 class CommandeMenu
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private int $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'menus')]
-    #[ORM\JoinColumn(name: 'commande_id', referencedColumnName: 'id')]
-    private Commande $commande;
+    #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'commandeMenus')]
+    #[ORM\JoinColumn(name: 'id_commande', referencedColumnName: 'id', nullable: false)]
+    private ?Commande $commande = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'menu_id', referencedColumnName: 'id')]
-    private Menu $menu;
+    #[ORM\ManyToOne(targetEntity: Menu::class, inversedBy: 'commandeMenus')]
+    #[ORM\JoinColumn(name: 'id_menu', referencedColumnName: 'id', nullable: false)]
+    private ?Menu $menu = null;
 
-    #[ORM\Column(type: 'integer', options: ['default' => 1])]
-    private int $quantite = 1;
+    #[ORM\Column]
+    private ?int $qte = null;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private float $prixUnitaire;
-
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getCommande(): Commande
+    public function getCommande(): ?Commande
     {
         return $this->commande;
     }
 
-    public function setCommande(Commande $commande): self
+    public function setCommande(?Commande $commande): static
     {
         $this->commande = $commande;
         return $this;
     }
 
-    public function getMenu(): Menu
+    public function getMenu(): ?Menu
     {
         return $this->menu;
     }
 
-    public function setMenu(Menu $menu): self
+    public function setMenu(?Menu $menu): static
     {
         $this->menu = $menu;
         return $this;
     }
 
-    public function getQuantite(): int
+    public function getQte(): ?int
     {
-        return $this->quantite;
+        return $this->qte;
     }
 
-    public function setQuantite(int $quantite): self
+    public function setQte(int $qte): static
     {
-        $this->quantite = $quantite;
+        $this->qte = $qte;
         return $this;
     }
 
-    public function getPrixUnitaire(): float
+    public function getTotal(): float
     {
-        return $this->prixUnitaire;
-    }
-
-    public function setPrixUnitaire(float $prixUnitaire): self
-    {
-        $this->prixUnitaire = $prixUnitaire;
-        return $this;
+        return ($this->menu?->getPrixTotal() ?? 0) * ($this->qte ?? 0);
     }
 }

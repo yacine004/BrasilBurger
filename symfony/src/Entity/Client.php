@@ -2,136 +2,141 @@
 
 namespace App\Entity;
 
+use App\Repository\ClientRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
-#[ORM\Entity]
-#[ORM\Table(name: 'client')]
-class Client
+#[ORM\Entity(repositoryClass: ClientRepository::class)]
+#[ORM\Table(name: "client")]
+class Client implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private int $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 100)]
-    private string $nom;
+    #[ORM\Column(length: 100)]
+    private ?string $nom = null;
 
-    #[ORM\Column(type: 'string', length: 100)]
-    private string $prenom;
+    #[ORM\Column(length: 100)]
+    private ?string $prenom = null;
 
-    #[ORM\Column(type: 'string', length: 20, unique: true)]
-    private string $telephone;
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $telephone = null;
 
-    #[ORM\Column(type: 'string', length: 100, unique: true)]
-    private string $email;
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $email = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $adresse;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $password = null;
 
-    #[ORM\Column(type: 'string', length: 100)]
-    private string $quartier;
-
-    #[ORM\Column(type: 'datetime')]
-    private \DateTime $dateCreation;
-
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $archive = false;
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Commande::class, cascade: ['remove'])]
+    private Collection $commandes;
 
     public function __construct()
     {
-        $this->dateCreation = new \DateTime();
+        $this->commandes = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getNom(): string
+    public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom(string $nom): self
+    public function setNom(string $nom): static
     {
         $this->nom = $nom;
         return $this;
     }
 
-    public function getPrenom(): string
+    public function getPrenom(): ?string
     {
         return $this->prenom;
     }
 
-    public function setPrenom(string $prenom): self
+    public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
         return $this;
     }
 
-    public function getTelephone(): string
+    public function getTelephone(): ?string
     {
         return $this->telephone;
     }
 
-    public function setTelephone(string $telephone): self
+    public function setTelephone(?string $telephone): static
     {
         $this->telephone = $telephone;
         return $this;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(?string $email): static
     {
         $this->email = $email;
         return $this;
     }
 
-    public function getAdresse(): string
+    public function getPassword(): ?string
     {
-        return $this->adresse;
+        return $this->password;
     }
 
-    public function setAdresse(string $adresse): self
+    public function setPassword(?string $password): static
     {
-        $this->adresse = $adresse;
+        $this->password = $password;
         return $this;
     }
 
-    public function getQuartier(): string
+    public function getCommandes(): Collection
     {
-        return $this->quartier;
+        return $this->commandes;
     }
 
-    public function setQuartier(string $quartier): self
+    public function addCommande(Commande $commande): static
     {
-        $this->quartier = $quartier;
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes->add($commande);
+            $commande->setClient($this);
+        }
         return $this;
     }
 
-    public function getDateCreation(): \DateTime
+    public function removeCommande(Commande $commande): static
     {
-        return $this->dateCreation;
-    }
-
-    public function setDateCreation(\DateTime $dateCreation): self
-    {
-        $this->dateCreation = $dateCreation;
+        if ($this->commandes->removeElement($commande)) {
+            if ($commande->getClient() === $this) {
+                $commande->setClient(null);
+            }
+        }
         return $this;
     }
 
-    public function isArchive(): bool
+    // UserInterface methods
+    public function getUserIdentifier(): string
     {
-        return $this->archive;
+        return (string) $this->email;
     }
 
-    public function setArchive(bool $archive): self
+    public function getRoles(): array
     {
-        $this->archive = $archive;
-        return $this;
+        return ['ROLE_CLIENT'];
+    }
+
+    public function eraseCredentials(): void
+    {
     }
 }

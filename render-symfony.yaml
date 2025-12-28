@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: BrasilBurger-Symfony
+    runtime: docker
+    repo: https://github.com/yacine004/BrasilBurger
+    branch: main
+    plan: free
+    dockerfilePath: ./symfony/Dockerfile
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: APP_SECRET
+        sync: false

@@ -1,0 +1,5 @@
+when@prod:
+    framework:
+        http_client:
+            default_options:
+                timeout: 10

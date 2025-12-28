@@ -5,309 +5,105 @@ namespace App\Controller;
 use App\Entity\Commande;
 use App\Repository\CommandeRepository;
 use App\Service\CommandeService;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Form\CommandeType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
-#[Route('/api/commandes', name: 'api_commandes_')]
+#[Route('/commande')]
 class CommandeController extends AbstractController
 {
     public function __construct(
         private CommandeRepository $commandeRepository,
         private CommandeService $commandeService,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $entityManager
     ) {}
 
-    /**
-     * Lister toutes les commandes
-     */
-    #[Route('', name: 'list', methods: ['GET'])]
-    public function list(Request $request): JsonResponse
+    #[Route('/', name: 'app_commande_index')]
+    public function index(): Response
     {
-        $etat = $request->query->get('etat');
-        $clientId = $request->query->get('clientId');
-        $page = (int) ($request->query->get('page') ?? 1);
-        $limit = (int) ($request->query->get('limit') ?? 20);
+        $commandes = $this->commandeRepository->findBy([], ['date' => 'DESC']);
 
-        $query = $this->em->createQueryBuilder()
-            ->select('c')
-            ->from(Commande::class, 'c')
-            ->orderBy('c.dateCommande', 'DESC');
-
-        if ($etat) {
-            $query->andWhere('c.etat = :etat')->setParameter('etat', $etat);
-        }
-
-        if ($clientId) {
-            $query->andWhere('c.client = :clientId')->setParameter('clientId', $clientId);
-        }
-
-        $total = (int) (clone $query)->select('COUNT(c.id)')->getQuery()->getSingleScalarResult();
-
-        $commandes = $query
-            ->setFirstResult(($page - 1) * $limit)
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult()
-        ;
-
-        return $this->json([
-            'success' => true,
-            'data' => $this->serializeCommandes($commandes),
-            'pagination' => [
-                'page' => $page,
-                'limit' => $limit,
-                'total' => $total,
-                'pages' => ceil($total / $limit)
-            ]
+        return $this->render('commande/index.html.twig', [
+            'commandes' => $commandes,
         ]);
     }
 
-    /**
-     * Récupérer une commande
-     */
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
-    public function show(int $id): JsonResponse
+    #[Route('/nouveau', name: 'app_commande_new', methods: ['GET', 'POST'])]
+    public function new(Request $request): Response
     {
-        $commande = $this->commandeRepository->find($id);
+        $commande = new Commande();
+        $form = $this->createForm(CommandeType::class, $commande);
+        $form->handleRequest($request);
 
-        if (!$commande) {
-            return $this->json(['error' => 'Commande non trouvée'], 404);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $commande->setDate($commande->getDate() ?? new \DateTime());
+            $this->entityManager->persist($commande);
+            $this->entityManager->flush();
+
+            $this->addFlash('success', 'Commande créée avec succès');
+            return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
         }
 
-        return $this->json([
-            'success' => true,
-            'data' => $this->serializeCommande($commande)
+        return $this->render('commande/new.html.twig', [
+            'form' => $form,
         ]);
     }
 
-    /**
-     * Créer une nouvelle commande
-     */
-    #[Route('', name: 'create', methods: ['POST'])]
-    public function create(Request $request): JsonResponse
+    #[Route('/{id}', name: 'app_commande_show')]
+    public function show(Commande $commande): Response
     {
-        $data = json_decode($request->getContent(), true);
+        $details = $this->commandeService->getCommandeDetails($commande);
 
-        try {
-            $commande = $this->commandeService->creerCommande(
-                $data['clientId'] ?? null,
-                $data['type'] ?? Commande::TYPE_PLACE
-            );
+        return $this->render('commande/show.html.twig', [
+            'commande' => $commande,
+            'details' => $details,
+        ]);
+    }
 
-            // Ajouter les burgers
-            if (isset($data['burgers'])) {
-                foreach ($data['burgers'] as $burger) {
-                    $this->commandeService->ajouterBurger(
-                        $commande,
-                        $burger['id'],
-                        $burger['quantite'] ?? 1
-                    );
-                }
+    #[Route('/{id}/edit', name: 'app_commande_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Commande $commande): Response
+    {
+        if ($request->isMethod('POST')) {
+            $etat = $request->request->get('etat');
+            if ($etat) {
+                $this->commandeService->updateCommandeStatus($commande, $etat);
+                $this->addFlash('success', 'Commande mise à jour avec succès');
+                return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
             }
-
-            // Ajouter les menus
-            if (isset($data['menus'])) {
-                foreach ($data['menus'] as $menu) {
-                    $this->commandeService->ajouterMenu(
-                        $commande,
-                        $menu['id'],
-                        $menu['quantite'] ?? 1
-                    );
-                }
-            }
-
-            // Ajouter les compléments
-            if (isset($data['complements'])) {
-                foreach ($data['complements'] as $complement) {
-                    $this->commandeService->ajouterComplement(
-                        $commande,
-                        $complement['id'],
-                        $complement['quantite'] ?? 1
-                    );
-                }
-            }
-
-            $this->em->persist($commande);
-            $this->em->flush();
-
-            return $this->json([
-                'success' => true,
-                'message' => 'Commande créée avec succès',
-                'data' => $this->serializeCommande($commande)
-            ], 201);
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
         }
+
+        return $this->render('commande/edit.html.twig', [
+            'commande' => $commande,
+        ]);
     }
 
-    /**
-     * Confirmer une commande
-     */
-    #[Route('/{id}/confirmer', name: 'confirmer', methods: ['POST'])]
-    public function confirmer(int $id): JsonResponse
+    #[Route('/{id}/ready', name: 'app_commande_ready', methods: ['POST'])]
+    public function markAsReady(Commande $commande): Response
     {
-        $commande = $this->commandeRepository->find($id);
+        $this->commandeService->markAsReady($commande);
+        $this->addFlash('success', 'Commande marquée comme prête');
 
-        if (!$commande) {
-            return $this->json(['error' => 'Commande non trouvée'], 404);
-        }
-
-        try {
-            $this->commandeService->confirmerCommande($commande);
-
-            return $this->json([
-                'success' => true,
-                'message' => 'Commande confirmée',
-                'data' => $this->serializeCommande($commande)
-            ]);
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
-        }
+        return $this->redirectToRoute('app_commande_show', ['id' => $commande->getId()]);
     }
 
-    /**
-     * Terminer une commande
-     */
-    #[Route('/{id}/terminer', name: 'terminer', methods: ['POST'])]
-    public function terminer(int $id): JsonResponse
+    #[Route('/{id}/cancel', name: 'app_commande_cancel', methods: ['POST'])]
+    public function cancel(Commande $commande): Response
     {
-        $commande = $this->commandeRepository->find($id);
+        $this->commandeService->cancelCommande($commande);
+        $this->addFlash('success', 'Commande annulée');
 
-        if (!$commande) {
-            return $this->json(['error' => 'Commande non trouvée'], 404);
-        }
-
-        try {
-            $this->commandeService->terminerCommande($commande);
-
-            return $this->json([
-                'success' => true,
-                'message' => 'Commande terminée',
-                'data' => $this->serializeCommande($commande)
-            ]);
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
-        }
+        return $this->redirectToRoute('app_commande_index');
     }
 
-    /**
-     * Annuler une commande
-     */
-    #[Route('/{id}/annuler', name: 'annuler', methods: ['POST'])]
-    public function annuler(int $id, Request $request): JsonResponse
+    #[Route('/{id}/delete', name: 'app_commande_delete', methods: ['POST'])]
+    public function delete(Commande $commande): Response
     {
-        $commande = $this->commandeRepository->find($id);
+        $this->commandeService->deleteCommande($commande);
+        $this->addFlash('success', 'Commande supprimée');
 
-        if (!$commande) {
-            return $this->json(['error' => 'Commande non trouvée'], 404);
-        }
-
-        try {
-            $this->commandeService->annulerCommande($commande);
-
-            return $this->json([
-                'success' => true,
-                'message' => 'Commande annulée',
-                'data' => $this->serializeCommande($commande)
-            ]);
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
-        }
-    }
-
-    /**
-     * Enregistrer un paiement
-     */
-    #[Route('/{id}/paiement', name: 'paiement', methods: ['POST'])]
-    public function paiement(int $id, Request $request): JsonResponse
-    {
-        $commande = $this->commandeRepository->find($id);
-
-        if (!$commande) {
-            return $this->json(['error' => 'Commande non trouvée'], 404);
-        }
-
-        $data = json_decode($request->getContent(), true);
-
-        try {
-            $paiement = $this->commandeService->effectuerPaiement(
-                $commande,
-                $data['montant'] ?? $commande->getMontant(),
-                $data['methode'] ?? 'ESPECE'
-            );
-
-            return $this->json([
-                'success' => true,
-                'message' => 'Paiement enregistré',
-                'data' => [
-                    'paiement' => [
-                        'id' => $paiement->getId(),
-                        'montant' => $paiement->getMontant(),
-                        'methode' => $paiement->getMethode(),
-                        'date' => $paiement->getDatePaiement()->format('Y-m-d H:i:s')
-                    ],
-                    'commande' => $this->serializeCommande($commande)
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
-        }
-    }
-
-    /**
-     * Serialize une commande pour la réponse JSON
-     */
-    private function serializeCommande(Commande $commande): array
-    {
-        return [
-            'id' => $commande->getId(),
-            'client' => [
-                'id' => $commande->getClient()->getId(),
-                'nom' => $commande->getClient()->getNom(),
-                'prenom' => $commande->getClient()->getPrenom(),
-                'telephone' => $commande->getClient()->getTelephone(),
-                'quartier' => $commande->getClient()->getQuartier()
-            ],
-            'dateCommande' => $commande->getDateCommande()->format('Y-m-d H:i:s'),
-            'etat' => $commande->getEtat(),
-            'mode' => $commande->getType(),
-            'montantTotal' => (float) $commande->getMontant(),
-            'payee' => $commande->isPayee(),
-            'notes' => $commande->getNotes(),
-            'burgers' => array_map(fn($cb) => [
-                'id' => $cb->getBurger()->getId(),
-                'nom' => $cb->getBurger()->getNom(),
-                'quantite' => $cb->getQuantite(),
-                'prix' => (float) $cb->getPrixUnitaire()
-            ], $commande->getBurgers()->toArray()),
-            'menus' => array_map(fn($cm) => [
-                'id' => $cm->getMenu()->getId(),
-                'nom' => $cm->getMenu()->getNom(),
-                'quantite' => $cm->getQuantite(),
-                'prix' => (float) $cm->getPrixUnitaire()
-            ], $commande->getMenus()->toArray()),
-            'complements' => array_map(fn($cc) => [
-                'id' => $cc->getComplement()->getId(),
-                'nom' => $cc->getComplement()->getNom(),
-                'quantite' => $cc->getQuantite(),
-                'prix' => (float) $cc->getPrixUnitaire()
-            ], $commande->getComplements()->toArray()),
-            'paiement' => $commande->getPaiement() ? [
-                'montant' => (float) $commande->getPaiement()->getMontant(),
-                'methode' => $commande->getPaiement()->getMethode(),
-                'date' => $commande->getPaiement()->getDatePaiement()->format('Y-m-d H:i:s')
-            ] : null
-        ];
-    }
-
-    /**
-     * Serialize plusieurs commandes
-     */
-    private function serializeCommandes(array $commandes): array
-    {
-        return array_map(fn($c) => $this->serializeCommande($c), $commandes);
+        return $this->redirectToRoute('app_commande_index');
     }
 }

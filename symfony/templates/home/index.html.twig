@@ -1,0 +1,311 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Brasil Burger - Accueil{% endblock %}
+
+{% block content %}
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 60px 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow);
+        }
+
+        .hero-section h1 {
+            font-size: 48px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .hero-section p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            color: var(--primary-color);
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--medium-gray);
+            line-height: 1.8;
+        }
+
+        .quick-stats {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .quick-stats h2 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 30px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: var(--medium-gray);
+            font-weight: 600;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #34495e 100%);
+            color: white;
+            padding: 50px 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .cta-section h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 32px;
+            }
+
+            .hero-section p {
+                font-size: 16px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .hero-buttons .btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1>🍔 Brasil Burger</h1>
+        <p>Système de gestion des commandes et livraisons</p>
+        <div class="hero-buttons">
+            <a href="{{ path('app_dashboard') }}" class="btn btn-success" style="font-size: 16px;">📊 Aller au Dashboard</a>
+            <a href="{{ path('app_commande_new') }}" class="btn" style="font-size: 16px; background: white; color: var(--primary-color);">➕ Créer une Commande</a>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <h2 style="text-align: center; color: var(--secondary-color); margin-bottom: 40px; font-size: 32px;">✨ Fonctionnalités Principales</h2>
+    
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">📦</div>
+            <h3>Gestion des Commandes</h3>
+            <p>Créez, suiverez et gérez toutes vos commandes en temps réel avec un interface intuitif.</p>
+            <a href="{{ path('app_commande_index') }}" class="btn" style="margin-top: 20px; width: 100%;">Accéder</a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🚚</div>
+            <h3>Gestion des Livreurs</h3>
+            <p>Organisez votre équipe de livraison et suivez les performances de chaque livreur.</p>
+            <a href="{{ path('app_livreur_index') }}" class="btn" style="margin-top: 20px; width: 100%;">Accéder</a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">📈</div>
+            <h3>Statistiques & Rapports</h3>
+            <p>Analysez vos ventes, identifiez vos burgers les plus populaires et optimisez vos revenus.</p>
+            <a href="{{ path('app_statistics_index') }}" class="btn" style="margin-top: 20px; width: 100%;">Accéder</a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Section -->
+    <div class="quick-stats">
+        <h2>📊 Vue d'ensemble</h2>
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="feature-icon">📋</div>
+                <div class="stat-label">Accédez rapidement à vos commandes</div>
+            </div>
+            <div class="stat-item">
+                <div class="feature-icon">🍔</div>
+                <div class="stat-label">Gérez votre catalogue de burgers</div>
+            </div>
+            <div class="stat-item">
+                <div class="feature-icon">💼</div>
+                <div class="stat-label">Suivi professionnel des livraisons</div>
+            </div>
+            <div class="stat-item">
+                <div class="feature-icon">📱</div>
+                <div class="stat-label">Interface responsive et moderne</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Benefits Section -->
+    <div style="background: white; padding: 50px 30px; border-radius: var(--border-radius); margin-bottom: 40px; box-shadow: var(--shadow);">
+        <h2 style="text-align: center; color: var(--secondary-color); margin-bottom: 40px; font-size: 32px;">💡 Avantages du Système</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px;">
+            <div style="padding: 20px;">
+                <h4 style="color: var(--primary-color); margin-bottom: 12px; font-size: 18px;">⚡ Rapide & Efficace</h4>
+                <p style="color: var(--medium-gray); line-height: 1.8;">Traitement instantané des commandes, réduction du temps de livraison et meilleure satisfaction client.</p>
+            </div>
+            <div style="padding: 20px;">
+                <h4 style="color: var(--primary-color); margin-bottom: 12px; font-size: 18px;">📊 Analytics en Temps Réel</h4>
+                <p style="color: var(--medium-gray); line-height: 1.8;">Suivi détaillé des ventes, des performances et des tendances pour une meilleure prise de décision.</p>
+            </div>
+            <div style="padding: 20px;">
+                <h4 style="color: var(--primary-color); margin-bottom: 12px; font-size: 18px;">🎯 Gestion Simplifiée</h4>
+                <p style="color: var(--medium-gray); line-height: 1.8;">Interface intuitive qui ne nécessite aucune formation préalable, accessible à tous vos collaborateurs.</p>
+            </div>
+            <div style="padding: 20px;">
+                <h4 style="color: var(--primary-color); margin-bottom: 12px; font-size: 18px;">💰 Augmente les Revenus</h4>
+                <p style="color: var(--medium-gray); line-height: 1.8;">Optimisez votre menu, suivez les best-sellers et augmentez votre rentabilité avec des données précises.</p>
+            </div>
+            <div style="padding: 20px;">
+                <h4 style="color: var(--primary-color); margin-bottom: 12px; font-size: 18px;">🔒 Sécurisé & Fiable</h4>
+                <p style="color: var(--medium-gray); line-height: 1.8;">Données sauvegardées dans le cloud, accès 24/7, protection complète de vos informations client.</p>
+            </div>
+            <div style="padding: 20px;">
+                <h4 style="color: var(--primary-color); margin-bottom: 12px; font-size: 18px;">🚀 Scalable</h4>
+                <p style="color: var(--medium-gray); line-height: 1.8;">Système conçu pour croître avec votre entreprise, qu'elle soit petite ou grande.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div style="background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%); padding: 50px 30px; border-radius: var(--border-radius); margin-bottom: 40px;">
+        <h2 style="text-align: center; color: var(--secondary-color); margin-bottom: 40px; font-size: 32px;">🔄 Comment ça Marche</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px;">
+            <div style="text-align: center; padding: 20px;">
+                <div style="background: var(--primary-color); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; font-weight: bold;">1</div>
+                <h4 style="color: var(--secondary-color); margin-bottom: 12px;">Créer une Commande</h4>
+                <p style="color: var(--medium-gray);">Entrez les détails du client, sélectionnez les items et validez</p>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <div style="background: #3498db; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; font-weight: bold;">2</div>
+                <h4 style="color: var(--secondary-color); margin-bottom: 12px;">Assigner un Livreur</h4>
+                <p style="color: var(--medium-gray);">Sélectionnez un livreur disponible et envoyez la commande</p>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <div style="background: #f39c12; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; font-weight: bold;">3</div>
+                <h4 style="color: var(--secondary-color); margin-bottom: 12px;">Suivre la Livraison</h4>
+                <p style="color: var(--medium-gray);">Consultez l'état en temps réel avec les mises à jour</p>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <div style="background: #27ae60; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; font-weight: bold;">4</div>
+                <h4 style="color: var(--secondary-color); margin-bottom: 12px;">Analyser les Ventes</h4>
+                <p style="color: var(--medium-gray);">Visualisez vos statistiques et améliorez vos performances</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Showcase -->
+    <div style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); color: white; padding: 50px 30px; border-radius: var(--border-radius); margin-bottom: 40px; text-align: center; box-shadow: var(--shadow);">
+        <h2 style="margin-bottom: 40px; font-size: 32px;">📈 Pourquoi Choisir Brasil Burger ?</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px;">
+            <div>
+                <div style="font-size: 48px; font-weight: bold; margin-bottom: 10px;">100%</div>
+                <p style="font-size: 16px;">Sécurisé</p>
+            </div>
+            <div>
+                <div style="font-size: 48px; font-weight: bold; margin-bottom: 10px;">24/7</div>
+                <p style="font-size: 16px;">Disponible</p>
+            </div>
+            <div>
+                <div style="font-size: 48px; font-weight: bold; margin-bottom: 10px;">0 Code</div>
+                <p style="font-size: 16px;">Facile à Utiliser</p>
+            </div>
+            <div>
+                <div style="font-size: 48px; font-weight: bold; margin-bottom: 10px;">∞ Support</div>
+                <p style="font-size: 16px;">Support Premium</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-section">
+        <h2>🚀 Prêt à Transformer Votre Restaurant ?</h2>
+        <p>Rejoignez les restaurants qui font confiance à Brasil Burger pour gérer leurs opérations</p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('app_dashboard') }}" class="btn btn-success" style="font-size: 16px; padding: 15px 40px;">Accéder au Dashboard</a>
+            <a href="{{ path('app_commande_new') }}" class="btn" style="font-size: 16px; padding: 15px 40px; background: white; color: var(--secondary-color);">Créer une Commande</a>
+        </div>
+    </div>
+
+    <!-- Footer Info -->
+    <div style="background: white; padding: 40px 30px; border-radius: var(--border-radius); text-align: center; margin-bottom: 20px; box-shadow: var(--shadow);">
+        <h3 style="color: var(--secondary-color); margin-bottom: 15px;">📞 Besoin d'aide ?</h3>
+        <p style="color: var(--medium-gray); margin-bottom: 20px;">Notre équipe est disponible pour répondre à toutes vos questions et vous aider à maximiser votre utilisation du système.</p>
+        <p style="color: var(--medium-gray); font-size: 14px; margin: 0;">
+            <strong>Email :</strong> support@brasiburguer.com | 
+            <strong>Téléphone :</strong> +221 77 123 4567
+        </p>
+    </div>
+{% endblock %}

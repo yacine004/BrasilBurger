@@ -2,183 +2,189 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\CommandeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
-#[ORM\Table(name: 'commande')]
+#[ORM\Entity(repositoryClass: CommandeRepository::class)]
+#[ORM\Table(name: "commande")]
 class Commande
 {
-    const STATUS_EN_ATTENTE = 'EN_ATTENTE';
-    const STATUS_CONFIRMEE = 'CONFIRMEE';
-    const STATUS_EN_COURS = 'EN_COURS';
-    const STATUS_TERMINER = 'TERMINER';
-    const STATUS_LIVREE = 'LIVREE';
-    const STATUS_ANNULEE = 'ANNULEE';
-
-    const TYPE_PLACE = 'PLACE';
-    const TYPE_RETRAIT = 'RETRAIT';
-    const TYPE_LIVRAISON = 'LIVRAISON';
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private int $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'client_id', referencedColumnName: 'id')]
-    private Client $client;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $date = null;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private float $montant;
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $etat = null;
 
-    #[ORM\Column(type: 'string', length: 50, options: ['default' => self::STATUS_EN_ATTENTE])]
-    private string $etat = self::STATUS_EN_ATTENTE;
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $mode = null;
 
-    #[ORM\Column(type: 'string', length: 50, options: ['default' => self::TYPE_PLACE])]
-    private string $type = self::TYPE_PLACE;
+    #[ORM\Column(nullable: true)]
+    private ?float $montant = null;
 
-    #[ORM\Column(type: 'datetime')]
-    private \DateTime $dateCommande;
+    #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'commandes')]
+    #[ORM\JoinColumn(name: 'id_client', referencedColumnName: 'id', nullable: false)]
+    private ?Client $client = null;
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTime $dateTerminaison = null;
+    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: CommandeBurger::class, cascade: ['remove'])]
+    private Collection $commandeBurgers;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $payee = false;
+    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: CommandeMenu::class, cascade: ['remove'])]
+    private Collection $commandeMenus;
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $notes = null;
+    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: CommandeComplement::class, cascade: ['remove'])]
+    private Collection $commandeComplements;
 
-    #[ORM\OneToMany(targetEntity: CommandeBurger::class, mappedBy: 'commande', cascade: ['persist', 'remove'])]
-    private Collection $burgers;
-
-    #[ORM\OneToMany(targetEntity: CommandeMenu::class, mappedBy: 'commande', cascade: ['persist', 'remove'])]
-    private Collection $menus;
-
-    #[ORM\OneToMany(targetEntity: CommandeComplement::class, mappedBy: 'commande', cascade: ['persist', 'remove'])]
-    private Collection $complements;
-
-    #[ORM\OneToOne(targetEntity: Paiement::class, mappedBy: 'commande', cascade: ['persist', 'remove'])]
-    private ?Paiement $paiement = null;
-
-    #[ORM\OneToOne(targetEntity: Livraison::class, mappedBy: 'commande', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'commande', targetEntity: Livraison::class, cascade: ['remove'])]
     private ?Livraison $livraison = null;
+
+    #[ORM\OneToOne(mappedBy: 'commande', targetEntity: Paiement::class, cascade: ['remove'])]
+    private ?Paiement $paiement = null;
 
     public function __construct()
     {
-        $this->dateCommande = new \DateTime();
-        $this->burgers = new ArrayCollection();
-        $this->menus = new ArrayCollection();
-        $this->complements = new ArrayCollection();
+        $this->date = new \DateTime();
+        $this->commandeBurgers = new ArrayCollection();
+        $this->commandeMenus = new ArrayCollection();
+        $this->commandeComplements = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getClient(): Client
+    public function getDate(): ?\DateTimeInterface
     {
-        return $this->client;
+        return $this->date;
     }
 
-    public function setClient(Client $client): self
+    public function setDate(?\DateTimeInterface $date): static
     {
-        $this->client = $client;
+        $this->date = $date;
         return $this;
     }
 
-    public function getMontant(): float
-    {
-        return $this->montant;
-    }
-
-    public function setMontant(float $montant): self
-    {
-        $this->montant = $montant;
-        return $this;
-    }
-
-    public function getEtat(): string
+    public function getEtat(): ?string
     {
         return $this->etat;
     }
 
-    public function setEtat(string $etat): self
+    public function setEtat(?string $etat): static
     {
         $this->etat = $etat;
         return $this;
     }
 
-    public function getType(): string
+    public function getMode(): ?string
     {
-        return $this->type;
+        return $this->mode;
     }
 
-    public function setType(string $type): self
+    public function setMode(?string $mode): static
     {
-        $this->type = $type;
+        $this->mode = $mode;
         return $this;
     }
 
-    public function getDateCommande(): \DateTime
+    public function getMontant(): ?float
     {
-        return $this->dateCommande;
+        return $this->montant;
     }
 
-    public function setDateCommande(\DateTime $dateCommande): self
+    public function setMontant(?float $montant): static
     {
-        $this->dateCommande = $dateCommande;
+        $this->montant = $montant;
         return $this;
     }
 
-    public function getDateTerminaison(): ?\DateTime
+    public function getClient(): ?Client
     {
-        return $this->dateTerminaison;
+        return $this->client;
     }
 
-    public function setDateTerminaison(?\DateTime $dateTerminaison): self
+    public function setClient(?Client $client): static
     {
-        $this->dateTerminaison = $dateTerminaison;
+        $this->client = $client;
         return $this;
     }
 
-    public function isPayee(): bool
+    public function getCommandeBurgers(): Collection
     {
-        return $this->payee;
+        return $this->commandeBurgers;
     }
 
-    public function setPayee(bool $payee): self
+    public function addCommandeBurger(CommandeBurger $commandeBurger): static
     {
-        $this->payee = $payee;
+        if (!$this->commandeBurgers->contains($commandeBurger)) {
+            $this->commandeBurgers->add($commandeBurger);
+            $commandeBurger->setCommande($this);
+        }
         return $this;
     }
 
-    public function getBurgers(): Collection
+    public function removeCommandeBurger(CommandeBurger $commandeBurger): static
     {
-        return $this->burgers;
+        if ($this->commandeBurgers->removeElement($commandeBurger)) {
+            if ($commandeBurger->getCommande() === $this) {
+                $commandeBurger->setCommande(null);
+            }
+        }
+        return $this;
     }
 
-    public function getMenus(): Collection
+    public function getCommandeMenus(): Collection
     {
-        return $this->menus;
+        return $this->commandeMenus;
     }
 
-    public function getComplements(): Collection
+    public function addCommandeMenu(CommandeMenu $commandeMenu): static
     {
-        return $this->complements;
+        if (!$this->commandeMenus->contains($commandeMenu)) {
+            $this->commandeMenus->add($commandeMenu);
+            $commandeMenu->setCommande($this);
+        }
+        return $this;
     }
 
-    public function getPaiement(): ?Paiement
+    public function removeCommandeMenu(CommandeMenu $commandeMenu): static
     {
-        return $this->paiement;
+        if ($this->commandeMenus->removeElement($commandeMenu)) {
+            if ($commandeMenu->getCommande() === $this) {
+                $commandeMenu->setCommande(null);
+            }
+        }
+        return $this;
     }
 
-    public function setPaiement(?Paiement $paiement): self
+    public function getCommandeComplements(): Collection
     {
-        $this->paiement = $paiement;
+        return $this->commandeComplements;
+    }
+
+    public function addCommandeComplement(CommandeComplement $commandeComplement): static
+    {
+        if (!$this->commandeComplements->contains($commandeComplement)) {
+            $this->commandeComplements->add($commandeComplement);
+            $commandeComplement->setCommande($this);
+        }
+        return $this;
+    }
+
+    public function removeCommandeComplement(CommandeComplement $commandeComplement): static
+    {
+        if ($this->commandeComplements->removeElement($commandeComplement)) {
+            if ($commandeComplement->getCommande() === $this) {
+                $commandeComplement->setCommande(null);
+            }
+        }
         return $this;
     }
 
@@ -187,20 +193,30 @@ class Commande
         return $this->livraison;
     }
 
-    public function setLivraison(?Livraison $livraison): self
+    public function setLivraison(?Livraison $livraison): static
     {
+        if ($livraison === null && $this->livraison !== null) {
+            $this->livraison->setCommande(null);
+        } elseif ($livraison !== null && $livraison->getCommande() !== $this) {
+            $livraison->setCommande($this);
+        }
         $this->livraison = $livraison;
         return $this;
     }
 
-    public function getNotes(): ?string
+    public function getPaiement(): ?Paiement
     {
-        return $this->notes;
+        return $this->paiement;
     }
 
-    public function setNotes(?string $notes): self
+    public function setPaiement(?Paiement $paiement): static
     {
-        $this->notes = $notes;
+        if ($paiement === null && $this->paiement !== null) {
+            $this->paiement->setCommande(null);
+        } elseif ($paiement !== null && $paiement->getCommande() !== $this) {
+            $paiement->setCommande($this);
+        }
+        $this->paiement = $paiement;
         return $this;
     }
 }

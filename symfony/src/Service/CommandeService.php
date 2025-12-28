@@ -6,191 +6,186 @@ use App\Entity\Commande;
 use App\Entity\CommandeBurger;
 use App\Entity\CommandeMenu;
 use App\Entity\CommandeComplement;
-use App\Entity\Paiement;
-use App\Repository\CommandeRepository;
-use App\Repository\ClientRepository;
 use App\Repository\BurgerRepository;
 use App\Repository\MenuRepository;
+use App\Repository\ComplementRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CommandeService
 {
     public function __construct(
-        private CommandeRepository $commandeRepository,
-        private ClientRepository $clientRepository,
+        private EntityManagerInterface $entityManager,
         private BurgerRepository $burgerRepository,
         private MenuRepository $menuRepository,
-        private EntityManagerInterface $em
+        private ComplementRepository $complementRepository
     ) {}
 
     /**
-     * Créer une nouvelle commande
+     * Crée une nouvelle commande
      */
-    public function creerCommande(int $clientId, string $type = Commande::TYPE_PLACE): Commande
+    public function createCommande(Commande $commande): void
     {
-        $client = $this->clientRepository->find($clientId);
-        if (!$client) {
-            throw new \Exception('Client non trouvé');
+        $commande->setEtat('En attente de paiement');
+        if ($commande->getDate() === null) {
+            $commande->setDate(new \DateTime());
         }
 
-        $commande = new Commande();
-        $commande->setClient($client);
-        $commande->setType($type);
-        $commande->setEtat(Commande::STATUS_EN_ATTENTE);
-
-        return $commande;
+        $this->entityManager->persist($commande);
+        $this->entityManager->flush();
     }
 
     /**
-     * Ajouter un burger à la commande
+     * Ajoute un burger à une commande
      */
-    public function ajouterBurger(Commande $commande, int $burgerId, int $quantite = 1): void
+    public function addBurgerToCommande(Commande $commande, int $burgerId, int $qte): void
     {
         $burger = $this->burgerRepository->find($burgerId);
         if (!$burger) {
-            throw new \InvalidArgumentException('Burger non trouvé');
+            throw new \Exception('Burger not found');
         }
 
         $commandeBurger = new CommandeBurger();
-        $commandeBurger->setBurger($burger);
-        $commandeBurger->setQuantite($quantite);
-        $commandeBurger->setPrixUnitaire($burger->getPrix());
         $commandeBurger->setCommande($commande);
+        $commandeBurger->setBurger($burger);
+        $commandeBurger->setQte($qte);
 
-        $commande->getBurgers()->add($commandeBurger);
-        $this->mettreAJourMontant($commande);
+        $this->entityManager->persist($commandeBurger);
+        $this->calculateAndSetTotal($commande);
+        $this->entityManager->flush();
     }
 
     /**
-     * Ajouter un menu à la commande
+     * Ajoute un menu à une commande
      */
-    public function ajouterMenu(Commande $commande, int $menuId, int $quantite = 1): void
+    public function addMenuToCommande(Commande $commande, int $menuId, int $qte): void
     {
         $menu = $this->menuRepository->find($menuId);
         if (!$menu) {
-            throw new \InvalidArgumentException('Menu non trouvé');
+            throw new \Exception('Menu not found');
         }
 
         $commandeMenu = new CommandeMenu();
-        $commandeMenu->setMenu($menu);
-        $commandeMenu->setQuantite($quantite);
-        $commandeMenu->setPrixUnitaire($menu->getPrix());
         $commandeMenu->setCommande($commande);
+        $commandeMenu->setMenu($menu);
+        $commandeMenu->setQte($qte);
 
-        $commande->getMenus()->add($commandeMenu);
-        $this->mettreAJourMontant($commande);
+        $this->entityManager->persist($commandeMenu);
+        $this->calculateAndSetTotal($commande);
+        $this->entityManager->flush();
     }
 
     /**
-     * Ajouter un complément à la commande
+     * Ajoute un complément à une commande
      */
-    public function ajouterComplement(Commande $commande, int $complementId, int $quantite = 1): void
+    public function addComplementToCommande(Commande $commande, int $complementId, int $qte): void
     {
-        $complement = $this->em->getRepository('App\Entity\Complement')->find($complementId);
+        $complement = $this->complementRepository->find($complementId);
         if (!$complement) {
-            throw new \InvalidArgumentException('Complément non trouvé');
+            throw new \Exception('Complement not found');
         }
 
         $commandeComplement = new CommandeComplement();
-        $commandeComplement->setComplement($complement);
-        $commandeComplement->setQuantite($quantite);
-        $commandeComplement->setPrixUnitaire($complement->getPrix());
         $commandeComplement->setCommande($commande);
+        $commandeComplement->setComplement($complement);
+        $commandeComplement->setQte($qte);
 
-        $commande->getComplements()->add($commandeComplement);
-        $this->mettreAJourMontant($commande);
+        $this->entityManager->persist($commandeComplement);
+        $this->calculateAndSetTotal($commande);
+        $this->entityManager->flush();
     }
 
     /**
-     * Mettre à jour le montant total de la commande
+     * Marque une commande comme validée
      */
-    public function mettreAJourMontant(Commande $commande): void
+    public function validateCommande(Commande $commande): void
     {
-        $montant = 0;
+        $commande->setEtat('Validée');
+        $this->entityManager->flush();
+    }
 
-        foreach ($commande->getBurgers() as $burger) {
-            $montant += $burger->getPrixUnitaire() * $burger->getQuantite();
+    /**
+     * Marque une commande comme prête (terminée)
+     */
+    public function markAsReady(Commande $commande): void
+    {
+        $commande->setEtat('Terminer');
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Annule une commande
+     */
+    public function cancelCommande(Commande $commande): void
+    {
+        $commande->setEtat('Annulée');
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Change le statut d'une commande
+     */
+    public function updateCommandeStatus(Commande $commande, string $status): void
+    {
+        $commande->setEtat($status);
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Calcule et définit le montant total d'une commande
+     */
+    public function calculateAndSetTotal(Commande $commande): void
+    {
+        $total = 0;
+
+        // Somme des burgers
+        foreach ($commande->getCommandeBurgers() as $cb) {
+            $total += $cb->getTotal();
         }
 
-        foreach ($commande->getMenus() as $menu) {
-            $montant += $menu->getPrixUnitaire() * $menu->getQuantite();
+        // Somme des menus
+        foreach ($commande->getCommandeMenus() as $cm) {
+            $total += $cm->getTotal();
         }
 
-        foreach ($commande->getComplements() as $complement) {
-            $montant += $complement->getPrixUnitaire() * $complement->getQuantite();
+        // Somme des compléments
+        foreach ($commande->getCommandeComplements() as $cc) {
+            $total += $cc->getTotal();
         }
 
-        $commande->setMontant($montant);
+        $commande->setMontant($total);
     }
 
     /**
-     * Confirmer une commande
+     * Supprime une commande
      */
-    public function confirmerCommande(Commande $commande): void
+    public function deleteCommande(Commande $commande): void
     {
-        $commande->setEtat(Commande::STATUS_CONFIRMEE);
-        $this->em->persist($commande);
-        $this->em->flush();
+        $this->entityManager->remove($commande);
+        $this->entityManager->flush();
     }
 
     /**
-     * Annuler une commande
+     * Récupère les détails d'une commande
      */
-    public function annulerCommande(Commande $commande): void
+    public function getCommandeDetails(Commande $commande): array
     {
-        $commande->setEtat(Commande::STATUS_ANNULEE);
-        $this->em->persist($commande);
-        $this->em->flush();
-    }
-
-    /**
-     * Terminer une commande
-     */
-    public function terminerCommande(Commande $commande): void
-    {
-        $commande->setEtat(Commande::STATUS_TERMINER);
-        $this->em->persist($commande);
-        $this->em->flush();
-    }
-
-    /**
-     * Enregistrer le paiement d'une commande
-     */
-    public function effectuerPaiement(Commande $commande, float $montant, string $methode): Paiement
-    {
-        if ($montant != $commande->getMontant()) {
-            throw new \InvalidArgumentException('Le montant du paiement ne correspond pas au total de la commande');
-        }
-
-        $paiement = new Paiement();
-        $paiement->setCommande($commande);
-        $paiement->setMontant($montant);
-        $paiement->setMethode($methode);
-        $paiement->setDatePaiement(new \DateTime());
-
-        $commande->setPaiement($paiement);
-        $commande->setPayee(true);
-
-        $this->em->persist($paiement);
-        $this->em->persist($commande);
-        $this->em->flush();
-
-        return $paiement;
-    }
-
-    /**
-     * Récupérer les commandes d'un client
-     */
-    public function getCommandesClient(int $clientId): array
-    {
-        return $this->commandeRepository->findByClient($clientId);
-    }
-
-    /**
-     * Récupérer une commande par ID
-     */
-    public function getCommande(int $commandeId): ?Commande
-    {
-        return $this->commandeRepository->find($commandeId);
+        return [
+            'id' => $commande->getId(),
+            'date' => $commande->getDate(),
+            'etat' => $commande->getEtat(),
+            'mode' => $commande->getMode(),
+            'montant' => $commande->getMontant(),
+            'client' => [
+                'id' => $commande->getClient()?->getId(),
+                'nom' => $commande->getClient()?->getNom(),
+                'prenom' => $commande->getClient()?->getPrenom(),
+                'telephone' => $commande->getClient()?->getTelephone(),
+            ],
+            'burgers' => $commande->getCommandeBurgers()->toArray(),
+            'menus' => $commande->getCommandeMenus()->toArray(),
+            'complements' => $commande->getCommandeComplements()->toArray(),
+            'livraison' => $commande->getLivraison(),
+            'paiement' => $commande->getPaiement(),
+        ];
     }
 }

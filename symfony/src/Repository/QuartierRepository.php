@@ -6,29 +6,10 @@ use App\Entity\Quartier;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Quartier>
- */
 class QuartierRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Quartier::class);
-    }
-
-    /**
-     * Trouver un quartier par nom
-     */
-    public function findByNom(string $nom): ?Quartier
-    {
-        return $this->findOneBy(['nom' => $nom]);
-    }
-
-    /**
-     * Trouver tous les quartiers triés par nom
-     */
-    public function findAllOrderedByName(): array
-    {
-        return $this->findBy([], ['nom' => 'ASC']);
     }
 }

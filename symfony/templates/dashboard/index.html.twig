@@ -1,0 +1,59 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Tableau de Bord - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>📊 Tableau de Bord</h2>
+        <p style="color: var(--medium-gray); margin: 0;">Statistiques du jour - {{ "now"|date("d/m/Y H:i") }}</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card" style="border-left-color: #f39c12;">
+            <h3 style="color: #f39c12;">📋 Commandes en Cours</h3>
+            <div class="stat-value" style="color: #f39c12;">{{ stats.commandesEnCours }}</div>
+            <a href="{{ path('app_statistics_en_cours') }}" class="btn btn-secondary" style="width: 100%;">Consulter</a>
+        </div>
+
+        <div class="stat-card" style="border-left-color: #3498db;">
+            <h3 style="color: #3498db;">✅ Commandes Validées</h3>
+            <div class="stat-value" style="color: #3498db;">{{ stats.commandesValidees }}</div>
+            <a href="{{ path('app_statistics_validees') }}" class="btn btn-info" style="width: 100%;">Consulter</a>
+        </div>
+
+        <div class="stat-card" style="border-left-color: #27ae60;">
+            <h3 style="color: #27ae60;">🏁 Commandes Terminées</h3>
+            <div class="stat-value" style="color: #27ae60;">{{ stats.commandesTerminees }}</div>
+            <a href="{{ path('app_statistics_terminees') }}" class="btn btn-success" style="width: 100%;">Consulter</a>
+        </div>
+
+        <div class="stat-card" style="border-left-color: #e74c3c;">
+            <h3 style="color: #e74c3c;">❌ Commandes Annulées</h3>
+            <div class="stat-value" style="color: #e74c3c;">{{ stats.commandesAnnulees }}</div>
+            <a href="{{ path('app_statistics_annulees') }}" class="btn btn-danger" style="width: 100%;">Consulter</a>
+        </div>
+
+        <div class="stat-card" style="border-left-color: var(--primary-color);">
+            <h3 style="color: var(--primary-color);">💰 Recettes Journalières</h3>
+            <div class="stat-value" style="color: var(--primary-color);">{{ (stats.recettes ?? 0)|number_format(0, ',', ' ') }}</div>
+            <p style="color: var(--medium-gray); margin: 10px 0 0 0; font-size: 12px;">FCFA</p>
+            <a href="{{ path('app_statistics_recettes') }}" class="btn" style="width: 100%;">Consulter</a>
+        </div>
+
+        <div class="stat-card" style="border-left-color: #9b59b6;">
+            <h3 style="color: #9b59b6;">🍔 Burgers Vendus</h3>
+            <div class="stat-value" style="color: #9b59b6;">{{ stats.burgersPlusVendus|length }}</div>
+            <a href="{{ path('app_statistics_burgers') }}" class="btn" style="width: 100%; background: #9b59b6;">Voir les Top</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>⚡ Actions Rapides</h3>
+        <div style="margin-top: 20px;">
+            <a href="{{ path('app_commande_index') }}" class="btn btn-secondary">📦 Voir Toutes les Commandes</a>
+            <a href="{{ path('app_commande_new') }}" class="btn btn-success">➕ Créer une Nouvelle Commande</a>
+            <a href="{{ path('app_livreur_index') }}" class="btn btn-secondary">🚚 Gérer les Livreurs</a>
+            <a href="{{ path('app_statistics_filter') }}" class="btn btn-info">🔍 Filtrer les Commandes</a>
+        </div>
+    </div>
+{% endblock %}

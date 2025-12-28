@@ -1,4 +1,8 @@
-app_controllers:
+web_profiler_routes:
+    resource: routes/web_profiler.yaml
+    prefix: /
+
+controllers:
     resource:
         path: ../src/Controller/
         namespace: App\Controller

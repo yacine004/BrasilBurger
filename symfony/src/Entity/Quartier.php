@@ -2,52 +2,49 @@
 
 namespace App\Entity;
 
+use App\Repository\QuartierRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
-#[ORM\Table(name: 'quartier')]
+#[ORM\Entity(repositoryClass: QuartierRepository::class)]
+#[ORM\Table(name: "quartier")]
 class Quartier
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private int $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 100)]
-    private string $nom;
+    #[ORM\Column(length: 100)]
+    private ?string $nom = null;
 
-    #[ORM\Column(type: 'datetime')]
-    private \DateTime $dateCreation;
+    #[ORM\ManyToOne(targetEntity: Zone::class)]
+    #[ORM\JoinColumn(name: 'id_zone', referencedColumnName: 'id', nullable: false)]
+    private ?Zone $zone = null;
 
-    public function __construct()
-    {
-        $this->dateCreation = new \DateTime();
-    }
-
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getNom(): string
+    public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom(string $nom): self
+    public function setNom(string $nom): static
     {
         $this->nom = $nom;
         return $this;
     }
 
-    public function getDateCreation(): \DateTime
+    public function getZone(): ?Zone
     {
-        return $this->dateCreation;
+        return $this->zone;
     }
 
-    public function setDateCreation(\DateTime $dateCreation): self
+    public function setZone(?Zone $zone): static
     {
-        $this->dateCreation = $dateCreation;
+        $this->zone = $zone;
         return $this;
     }
 }

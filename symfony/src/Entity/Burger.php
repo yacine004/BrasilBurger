@@ -2,62 +2,66 @@
 
 namespace App\Entity;
 
+use App\Repository\BurgerRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
-#[ORM\Table(name: 'burger')]
+#[ORM\Entity(repositoryClass: BurgerRepository::class)]
+#[ORM\Table(name: "burger")]
 class Burger
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private int $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 100)]
-    private string $nom;
+    #[ORM\Column(length: 100)]
+    private ?string $nom = null;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private float $prix;
+    #[ORM\Column]
+    private ?float $prix = null;
 
-    #[ORM\Column(type: 'string', length: 500, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $description = null;
+    #[ORM\Column]
+    private ?bool $etat = true;
 
-    #[ORM\Column(type: 'datetime')]
-    private \DateTime $dateCreation;
+    #[ORM\ManyToMany(targetEntity: Menu::class, mappedBy: 'burgers')]
+    private Collection $menus;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => false])]
-    private bool $archive = false;
+    #[ORM\OneToMany(mappedBy: 'burger', targetEntity: CommandeBurger::class, cascade: ['remove'])]
+    private Collection $commandeBurgers;
 
     public function __construct()
     {
-        $this->dateCreation = new \DateTime();
+        $this->menus = new ArrayCollection();
+        $this->commandeBurgers = new ArrayCollection();
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getNom(): string
+    public function getNom(): ?string
     {
         return $this->nom;
     }
 
-    public function setNom(string $nom): self
+    public function setNom(string $nom): static
     {
         $this->nom = $nom;
         return $this;
     }
 
-    public function getPrix(): float
+    public function getPrix(): ?float
     {
         return $this->prix;
     }
 
-    public function setPrix(float $prix): self
+    public function setPrix(float $prix): static
     {
         $this->prix = $prix;
         return $this;
@@ -68,42 +72,66 @@ class Burger
         return $this->image;
     }
 
-    public function setImage(?string $image): self
+    public function setImage(?string $image): static
     {
         $this->image = $image;
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function isEtat(): ?bool
     {
-        return $this->description;
+        return $this->etat;
     }
 
-    public function setDescription(?string $description): self
+    public function setEtat(bool $etat): static
     {
-        $this->description = $description;
+        $this->etat = $etat;
         return $this;
     }
 
-    public function getDateCreation(): \DateTime
+    public function getMenus(): Collection
     {
-        return $this->dateCreation;
+        return $this->menus;
     }
 
-    public function setDateCreation(\DateTime $dateCreation): self
+    public function addMenu(Menu $menu): static
     {
-        $this->dateCreation = $dateCreation;
+        if (!$this->menus->contains($menu)) {
+            $this->menus->add($menu);
+            $menu->addBurger($this);
+        }
         return $this;
     }
 
-    public function isArchive(): bool
+    public function removeMenu(Menu $menu): static
     {
-        return $this->archive;
+        if ($this->menus->removeElement($menu)) {
+            $menu->removeBurger($this);
+        }
+        return $this;
     }
 
-    public function setArchive(bool $archive): self
+    public function getCommandeBurgers(): Collection
     {
-        $this->archive = $archive;
+        return $this->commandeBurgers;
+    }
+
+    public function addCommandeBurger(CommandeBurger $commandeBurger): static
+    {
+        if (!$this->commandeBurgers->contains($commandeBurger)) {
+            $this->commandeBurgers->add($commandeBurger);
+            $commandeBurger->setBurger($this);
+        }
+        return $this;
+    }
+
+    public function removeCommandeBurger(CommandeBurger $commandeBurger): static
+    {
+        if ($this->commandeBurgers->removeElement($commandeBurger)) {
+            if ($commandeBurger->getBurger() === $this) {
+                $commandeBurger->setBurger(null);
+            }
+        }
         return $this;
     }
 }

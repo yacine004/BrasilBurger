@@ -1,0 +1,50 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Livreurs - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>🚚 Gestion des Livreurs</h2>
+        <p style="color: var(--medium-gray); margin-bottom: 20px;">Gérez votre équipe de livraison</p>
+        <a href="{{ path('app_livreur_new') }}" class="btn btn-success">➕ Nouveau Livreur</a>
+    </div>
+
+    {% if livreurs is empty %}
+        <div class="card text-center">
+            <p style="font-size: 16px; color: var(--medium-gray); padding: 40px 0;">
+                📭 Aucun livreur enregistré.<br>
+                <a href="{{ path('app_livreur_new') }}" style="color: var(--primary-color); text-decoration: underline;">Ajouter un nouveau livreur</a>
+            </p>
+        </div>
+    {% else %}
+        <div class="card" style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">ID</th>
+                        <th style="width: 40%;">Nom Complet</th>
+                        <th style="width: 25%;">Téléphone</th>
+                        <th style="width: 20%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for livreur in livreurs %}
+                        <tr>
+                            <td><strong>#{{ livreur.id }}</strong></td>
+                            <td style="font-weight: 600;">{{ livreur.nomComplet }}</td>
+                            <td>
+                                <a href="tel:{{ livreur.telephone }}" style="color: var(--primary-color); text-decoration: none; font-weight: 500;">
+                                    📱 {{ livreur.telephone }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ path('app_livreur_show', {'id': livreur.id}) }}" class="btn btn-secondary" style="padding: 8px 12px; font-size: 12px; margin-right: 5px;">👁️ Voir</a>
+                                <a href="{{ path('app_livreur_edit', {'id': livreur.id}) }}" class="btn" style="padding: 8px 12px; font-size: 12px;">✏️ Éditer</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

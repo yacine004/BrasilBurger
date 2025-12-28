@@ -1,0 +1,48 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Filtrer Commandes - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>🔍 Résultats du Filtrage</h2>
+        <a href="{{ path('app_statistics_index') }}" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    {% if commandes is empty %}
+        <div class="card">
+            <p>Aucune commande ne correspond à vos critères de filtrage.</p>
+        </div>
+    {% else %}
+        <div class="card">
+            <p><strong>{{ commandes|length }}</strong> commande(s) trouvée(s)</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>État</th>
+                        <th>Montant</th>
+                        <th>Mode</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                        <tr>
+                            <td>#{{ commande.id }}</td>
+                            <td>{{ commande.client.prenom }} {{ commande.client.nom }}</td>
+                            <td>{{ commande.date|date("d/m/Y H:i") }}</td>
+                            <td>{{ commande.etat }}</td>
+                            <td>{{ (commande.montant ?? 0)|number_format(2, ',', ' ') }} FCFA</td>
+                            <td>{{ commande.mode }}</td>
+                            <td>
+                                <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-secondary">Voir</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

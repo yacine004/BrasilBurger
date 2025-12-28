@@ -1,0 +1,134 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Détails Commande - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>Commande #{{ commande.id }}</h2>
+        <a href="{{ path('app_commande_index') }}" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    <div class="card">
+        <h3>Informations Générales</h3>
+        <p><strong>Client:</strong> {{ commande.client.prenom }} {{ commande.client.nom }}</p>
+        <p><strong>Téléphone:</strong> {{ commande.client.telephone }}</p>
+        <p><strong>Email:</strong> {{ commande.client.email }}</p>
+        <p><strong>Date:</strong> {{ commande.date|date("d/m/Y H:i") }}</p>
+        <p><strong>État:</strong> <strong>{{ commande.etat }}</strong></p>
+        <p><strong>Mode:</strong> {{ commande.mode }}</p>
+        <p><strong>Montant Total:</strong> <strong>{{ (commande.montant ?? 0)|number_format(2, ',', ' ') }} FCFA</strong></p>
+    </div>
+
+    {% if commande.commandeBurgers is not empty %}
+        <div class="card">
+            <h3>🍔 Burgers Commandés</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Burger</th>
+                        <th>Prix Unitaire</th>
+                        <th>Quantité</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cb in commande.commandeBurgers %}
+                        <tr>
+                            <td>{{ cb.burger.nom }}</td>
+                            <td>{{ (cb.burger.prix ?? 0)|number_format(2, ',', ' ') }} FCFA</td>
+                            <td>{{ cb.qte }}</td>
+                            <td>{{ (cb.total)|number_format(2, ',', ' ') }} FCFA</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if commande.commandeMenus is not empty %}
+        <div class="card">
+            <h3>📋 Menus Commandés</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Menu</th>
+                        <th>Prix Unitaire</th>
+                        <th>Quantité</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cm in commande.commandeMenus %}
+                        <tr>
+                            <td>{{ cm.menu.nom }}</td>
+                            <td>{{ (cm.menu.prixTotal ?? 0)|number_format(2, ',', ' ') }} FCFA</td>
+                            <td>{{ cm.qte }}</td>
+                            <td>{{ (cm.total)|number_format(2, ',', ' ') }} FCFA</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if commande.commandeComplements is not empty %}
+        <div class="card">
+            <h3>➕ Compléments</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Complément</th>
+                        <th>Prix Unitaire</th>
+                        <th>Quantité</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cc in commande.commandeComplements %}
+                        <tr>
+                            <td>{{ cc.complement.nom }}</td>
+                            <td>{{ (cc.complement.prix ?? 0)|number_format(2, ',', ' ') }} FCFA</td>
+                            <td>{{ cc.qte }}</td>
+                            <td>{{ (cc.total)|number_format(2, ',', ' ') }} FCFA</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    {% if commande.livraison %}
+        <div class="card">
+            <h3>🚚 Livraison</h3>
+            <p><strong>Livreur:</strong> {{ commande.livraison.livreur.nomComplet }}</p>
+            <p><strong>Téléphone:</strong> {{ commande.livraison.livreur.telephone }}</p>
+        </div>
+    {% endif %}
+
+    {% if commande.paiement %}
+        <div class="card">
+            <h3>💳 Paiement</h3>
+            <p><strong>Date:</strong> {{ commande.paiement.date|date("d/m/Y H:i") }}</p>
+            <p><strong>Montant:</strong> {{ (commande.paiement.montant ?? 0)|number_format(2, ',', ' ') }} FCFA</p>
+            <p><strong>Mode:</strong> {{ commande.paiement.mode }}</p>
+        </div>
+    {% else %}
+        <div class="card" style="background-color: #fff3cd;">
+            <p><strong>⚠️ Cette commande n'est pas payée.</strong></p>
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <h3>Actions</h3>
+        <a href="{{ path('app_commande_edit', {'id': commande.id}) }}" class="btn">✏️ Modifier l'État</a>
+        <form method="POST" action="{{ path('app_commande_ready', {'id': commande.id}) }}" style="display:inline;">
+            <button type="submit" class="btn btn-success" onclick="return confirm('Marquer comme prête?')">✅ Marquer Prête</button>
+        </form>
+        <form method="POST" action="{{ path('app_commande_cancel', {'id': commande.id}) }}" style="display:inline;">
+            <button type="submit" class="btn" onclick="return confirm('Annuler cette commande?')" style="background-color: #ff9800;">❌ Annuler</button>
+        </form>
+        <form method="POST" action="{{ path('app_commande_delete', {'id': commande.id}) }}" style="display:inline;">
+            <button type="submit" class="btn" onclick="return confirm('Supprimer cette commande?')" style="background-color: #f44336;">🗑️ Supprimer</button>
+        </form>
+    </div>
+{% endblock %}

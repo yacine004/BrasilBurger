@@ -1,0 +1,28 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Nouveau Livreur - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>➕ Ajouter un Nouveau Livreur</h2>
+        <a href="{{ path('app_livreur_index') }}" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    <div class="card">
+        <form method="POST" style="display: grid; gap: 15px;">
+            <div>
+                <label for="nom"><strong>Nom:</strong></label>
+                <input type="text" name="nom" id="nom" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label for="prenom"><strong>Prénom:</strong></label>
+                <input type="text" name="prenom" id="prenom" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <div>
+                <label for="telephone"><strong>Téléphone:</strong></label>
+                <input type="tel" name="telephone" id="telephone" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            <button type="submit" class="btn btn-success">✅ Créer Livreur</button>
+        </form>
+    </div>
+{% endblock %}

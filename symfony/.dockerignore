@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+var/
+vendor/
+.vscode
+.idea
+*.log
+*.phar
+*.zip
+.DS_Store
+node_modules/
+npm-debug.log
+yarn-error.log

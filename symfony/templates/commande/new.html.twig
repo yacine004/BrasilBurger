@@ -1,0 +1,67 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Nouvelle Commande - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <h2>📦 Créer une Nouvelle Commande</h2>
+        <p style="color: var(--medium-gray); margin-bottom: 25px;">Remplissez tous les champs pour créer une commande</p>
+        
+        {{ form_start(form, {'attr': {'class': 'commande-form', 'novalidate': true}}) }}
+            <div class="form-group">
+                {{ form_label(form.client, "👤 Client") }}
+                {{ form_widget(form.client, {'attr': {'class': 'form-control'}}) }}
+                {% if form.client.vars.errors %}
+                    <div class="alert alert-danger" style="margin-top: 8px;">
+                        {{ form_errors(form.client) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.date, "📅 Date et Heure") }}
+                {{ form_widget(form.date, {'attr': {'class': 'form-control'}}) }}
+                {% if form.date.vars.errors %}
+                    <div class="alert alert-danger" style="margin-top: 8px;">
+                        {{ form_errors(form.date) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.etat, "📋 État") }}
+                {{ form_widget(form.etat, {'attr': {'class': 'form-control'}}) }}
+                {% if form.etat.vars.errors %}
+                    <div class="alert alert-danger" style="margin-top: 8px;">
+                        {{ form_errors(form.etat) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.mode, "🚚 Mode de Livraison") }}
+                {{ form_widget(form.mode, {'attr': {'class': 'form-control'}}) }}
+                {% if form.mode.vars.errors %}
+                    <div class="alert alert-danger" style="margin-top: 8px;">
+                        {{ form_errors(form.mode) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form_label(form.montant, "💰 Montant (FCFA)") }}
+                {{ form_widget(form.montant, {'attr': {'class': 'form-control', 'placeholder': '0.00', 'step': '0.01'}}) }}
+                {% if form.montant.vars.errors %}
+                    <div class="alert alert-danger" style="margin-top: 8px;">
+                        {{ form_errors(form.montant) }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-success" style="flex: 1;">✓ Créer la Commande</button>
+                <a href="{{ path('app_commande_index') }}" class="btn btn-secondary" style="flex: 1; text-align: center;">← Annuler</a>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

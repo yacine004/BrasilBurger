@@ -1,33 +1,18 @@
 framework:
     secret: '%env(APP_SECRET)%'
-    http_method_override: false
-    router:
-        utf8: true
-    php_errors:
-        log: true
+    #csrf_protection:
+    #    enabled: true
+    #http_method_override: true
+
+    # Uncomment when using the "App\Kernel" class instead of the default one
+    # kernel:
+    #     class: App\Kernel
+
     session:
         handler_id: null
         cookie_secure: auto
-        cookie_httponly: true
         cookie_samesite: lax
         storage_factory_id: session.storage.factory.native
-    validation:
-        enabled: true
-        enable_annotations: false
 
-serializer:
-    enable_annotations: false
-
-twig:
-    default_path: '%kernel.project_dir%/templates'
-    debug: '%kernel.debug%'
-    strict_variables: '%kernel.debug%'
-
-cors:
-    defaults:
-        allow_origin: ['*']
-        allow_credentials: false
-        allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
-        allow_headers: ['*']
-        expose_headers: ['Link']
-        max_age: 3600
+    php_errors:
+        log: true

@@ -6,9 +6,6 @@ use App\Entity\Burger;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Burger>
- */
 class BurgerRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,37 +13,42 @@ class BurgerRepository extends ServiceEntityRepository
         parent::__construct($registry, Burger::class);
     }
 
-    /**
-     * Trouver les burgers actifs (non archivés)
-     */
-    public function findBurgersActifs(): array
+    public function findActifs()
     {
-        return $this->findBy(['archive' => false], ['nom' => 'ASC']);
+        return $this->findBy(['etat' => true]);
     }
 
-    /**
-     * Trouver un burger par nom
-     */
-    public function findByNom(string $nom): ?Burger
+    public function findMostSoldToday()
     {
-        return $this->findOneBy(['nom' => $nom, 'archive' => false]);
-    }
-
-    /**
-     * Burgers les plus vendus du jour
-     */
-    public function findBurgersPlusVendusJour(): array
-    {
-        return $this->createQueryBuilder('b')
-            ->select('b, COUNT(cb.id) as ventes')
-            ->leftJoin('App\Entity\CommandeBurger', 'cb', 'WITH', 'cb.burger = b')
-            ->leftJoin('App\Entity\Commande', 'c', 'WITH', 'cb.commande = c')
-            ->andWhere('DATE(c.dateCommande) = CURRENT_DATE()')
-            ->andWhere('b.archive = false')
-            ->groupBy('b.id')
-            ->orderBy('ventes', 'DESC')
-            ->getQuery()
-            ->getResult()
-        ;
+        $today = new \DateTime();
+        $today->setTime(0, 0, 0);
+        $tomorrow = (clone $today)->modify('+1 day');
+        
+        // Utiliser une requête native SQL pour éviter les problèmes de performance
+        $connection = $this->getEntityManager()->getConnection();
+        $sql = "
+            SELECT DISTINCT b.id FROM burger b
+            INNER JOIN commande_burger cb ON b.id = cb.id_burger
+            INNER JOIN commande c ON cb.id_commande = c.id
+            WHERE c.date >= :start AND c.date < :end
+            ORDER BY b.id DESC
+            LIMIT 10
+        ";
+        
+        $stmt = $connection->prepare($sql);
+        $result = $stmt->executeQuery([
+            'start' => $today->format('Y-m-d H:i:s'),
+            'end' => $tomorrow->format('Y-m-d H:i:s'),
+        ]);
+        
+        $burgers = [];
+        foreach ($result->fetchAllAssociative() as $row) {
+            $burger = $this->find($row['id']);
+            if ($burger) {
+                $burgers[] = $burger;
+            }
+        }
+        
+        return $burgers;
     }
 }

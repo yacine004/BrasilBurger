@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Brasil Burger - Gestion{% endblock %}</title>
+    <link rel="stylesheet" href="/css/style.css">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🍔 Brasil Burger</div>
+            <nav>
+                <a href="{{ path('app_dashboard') }}">📊 Dashboard</a>
+                <a href="{{ path('app_commande_index') }}">📦 Commandes</a>
+                <a href="{{ path('app_statistics_index') }}">📈 Statistiques</a>
+                <a href="{{ path('app_livreur_index') }}">🚚 Livreurs</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">✓ {{ message }}</div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger">✗ {{ message }}</div>
+        {% endfor %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Brasil Burger - Gestion des Commandes et Livraisons</p>
+    </footer>
+
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

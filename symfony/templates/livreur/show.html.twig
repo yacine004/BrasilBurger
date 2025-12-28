@@ -1,0 +1,46 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Détail Livreur - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>🚚 {{ livreur.nomComplet }}</h2>
+        <a href="{{ path('app_livreur_index') }}" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    <div class="card">
+        <h3>Informations</h3>
+        <p><strong>Nom:</strong> {{ livreur.nom }}</p>
+        <p><strong>Prénom:</strong> {{ livreur.prenom }}</p>
+        <p><strong>Téléphone:</strong> {{ livreur.telephone }}</p>
+        <a href="{{ path('app_livreur_edit', {'id': livreur.id}) }}" class="btn">✏️ Modifier</a>
+    </div>
+
+    <div class="card">
+        <h3>🚚 Livraisons Assignées</h3>
+        {% if livraisons is empty %}
+            <p>Aucune livraison assignée.</p>
+        {% else %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Commande</th>
+                        <th>Client</th>
+                        <th>Montant</th>
+                        <th>Mode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for livraison in livraisons %}
+                        <tr>
+                            <td>#{{ livraison.commande.id }}</td>
+                            <td>{{ livraison.commande.client.prenom }} {{ livraison.commande.client.nom }}</td>
+                            <td>{{ (livraison.commande.montant ?? 0)|number_format(2, ',', ' ') }} FCFA</td>
+                            <td>{{ livraison.commande.mode }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+{% endblock %}

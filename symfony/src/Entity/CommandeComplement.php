@@ -2,77 +2,69 @@
 
 namespace App\Entity;
 
+use App\Repository\CommandeComplementRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
-#[ORM\Table(name: 'commande_complement')]
+#[ORM\Entity(repositoryClass: CommandeComplementRepository::class)]
+#[ORM\Table(name: "commande_complement")]
 class CommandeComplement
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private int $id;
+    #[ORM\Column]
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'complements')]
-    #[ORM\JoinColumn(name: 'commande_id', referencedColumnName: 'id')]
-    private Commande $commande;
+    #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'commandeComplements')]
+    #[ORM\JoinColumn(name: 'id_commande', referencedColumnName: 'id', nullable: false)]
+    private ?Commande $commande = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'complement_id', referencedColumnName: 'id')]
-    private Complement $complement;
+    #[ORM\ManyToOne(targetEntity: Complement::class, inversedBy: 'commandeComplements')]
+    #[ORM\JoinColumn(name: 'id_complement', referencedColumnName: 'id', nullable: false)]
+    private ?Complement $complement = null;
 
-    #[ORM\Column(type: 'integer', options: ['default' => 1])]
-    private int $quantite = 1;
+    #[ORM\Column]
+    private ?int $qte = null;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private float $prixUnitaire;
-
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getCommande(): Commande
+    public function getCommande(): ?Commande
     {
         return $this->commande;
     }
 
-    public function setCommande(Commande $commande): self
+    public function setCommande(?Commande $commande): static
     {
         $this->commande = $commande;
         return $this;
     }
 
-    public function getComplement(): Complement
+    public function getComplement(): ?Complement
     {
         return $this->complement;
     }
 
-    public function setComplement(Complement $complement): self
+    public function setComplement(?Complement $complement): static
     {
         $this->complement = $complement;
         return $this;
     }
 
-    public function getQuantite(): int
+    public function getQte(): ?int
     {
-        return $this->quantite;
+        return $this->qte;
     }
 
-    public function setQuantite(int $quantite): self
+    public function setQte(int $qte): static
     {
-        $this->quantite = $quantite;
+        $this->qte = $qte;
         return $this;
     }
 
-    public function getPrixUnitaire(): float
+    public function getTotal(): float
     {
-        return $this->prixUnitaire;
-    }
-
-    public function setPrixUnitaire(float $prixUnitaire): self
-    {
-        $this->prixUnitaire = $prixUnitaire;
-        return $this;
+        return ($this->complement?->getPrix() ?? 0) * ($this->qte ?? 0);
     }
 }

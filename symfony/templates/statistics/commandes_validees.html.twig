@@ -1,0 +1,46 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Commandes Validées - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>✅ Commandes Validées du Jour</h2>
+        <p>Total: <strong>{{ commandes|length }}</strong></p>
+        <a href="{{ path('app_statistics_index') }}" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    {% if commandes is empty %}
+        <div class="card">
+            <p>Aucune commande validée aujourd'hui.</p>
+        </div>
+    {% else %}
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>Montant</th>
+                        <th>Paiement</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in commandes %}
+                        <tr>
+                            <td>#{{ commande.id }}</td>
+                            <td>{{ commande.client.prenom }} {{ commande.client.nom }}</td>
+                            <td>{{ commande.date|date("d/m/Y H:i") }}</td>
+                            <td>{{ (commande.montant ?? 0)|number_format(2, ',', ' ') }} FCFA</td>
+                            <td>{{ commande.paiement ? '✅ Payée' : '❌ Non payée' }}</td>
+                            <td>
+                                <a href="{{ path('app_commande_show', {'id': commande.id}) }}" class="btn btn-secondary">Voir</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

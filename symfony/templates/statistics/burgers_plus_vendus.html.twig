@@ -1,0 +1,58 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Burgers Populaires - Brasil Burger{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <h2>🍔 Burgers les Plus Vendus Aujourd'hui</h2>
+        <p style="color: var(--medium-gray); margin-bottom: 20px;">Découvrez les burgers les plus populaires</p>
+        <a href="{{ path('app_statistics_index') }}" class="btn btn-secondary">← Retour aux Statistiques</a>
+    </div>
+
+    {% if burgers is empty %}
+        <div class="card text-center">
+            <p style="font-size: 16px; color: var(--medium-gray); padding: 40px 0;">
+                📭 Aucun burger vendu aujourd'hui.
+            </p>
+        </div>
+    {% else %}
+        <div class="card" style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">🏆 Rang</th>
+                        <th style="width: 38%;">🍔 Burger</th>
+                        <th style="width: 25%;">💰 Prix</th>
+                        <th style="width: 25%;">📊 Quantités Vendues</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set rang = 1 %}
+                    {% for burger in burgers %}
+                        <tr style="border-left: 4px solid {% if rang == 1 %}#f39c12{% elseif rang == 2 %}#c0392b{% elseif rang == 3 %}#bdc3c7{% else %}var(--light-gray){% endif %};">
+                            <td style="text-align: center;">
+                                {% if rang == 1 %}
+                                    <span style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white; padding: 5px 10px; border-radius: 6px; font-weight: bold; display: inline-block;">🥇 #1</span>
+                                {% elseif rang == 2 %}
+                                    <span style="background: linear-gradient(135deg, #c0392b, #e74c3c); color: white; padding: 5px 10px; border-radius: 6px; font-weight: bold; display: inline-block;">🥈 #2</span>
+                                {% elseif rang == 3 %}
+                                    <span style="background: linear-gradient(135deg, #bdc3c7, #95a5a6); color: white; padding: 5px 10px; border-radius: 6px; font-weight: bold; display: inline-block;">🥉 #3</span>
+                                {% else %}
+                                    <strong>#{{ rang }}</strong>
+                                {% endif %}
+                            </td>
+                            <td style="font-weight: 600; color: var(--primary-color);">{{ burger.nom }}</td>
+                            <td><strong style="color: var(--primary-color);">{{ (burger.prix ?? 0)|number_format(0, ',', ' ') }} FCFA</strong></td>
+                            <td style="text-align: center;">
+                                <span style="background: var(--success-color); color: white; padding: 8px 15px; border-radius: 8px; font-weight: 600; display: inline-block;">
+                                    {{ burger.commandeBurgers|length }} unité{{ burger.commandeBurgers|length > 1 ? 's' : '' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% set rang = rang + 1 %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

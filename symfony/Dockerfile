@@ -34,8 +34,8 @@ RUN a2enmod rewrite
 # Copier le code depuis le builder
 COPY --from=builder /app .
 
-# Copier la configuration PHP personnalisée (si elle existe)
-COPY symfony/php.ini /usr/local/etc/php/conf.d/custom.ini || true
+# Copier la configuration PHP personnalisée si elle existe
+RUN if [ -f symfony/php.ini ]; then cp symfony/php.ini /usr/local/etc/php/conf.d/custom.ini; fi
 
 # Configuration Apache - VirtualHost
 RUN echo '<VirtualHost *:80>\n\

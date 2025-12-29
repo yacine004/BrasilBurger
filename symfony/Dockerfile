@@ -13,12 +13,16 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Copier les fichiers du projet Symfony
 COPY symfony/ .
 
+# Valider composer.json
+RUN echo "=== Validating composer.json ===" && \
+    composer validate --no-check-lock --strict 2>&1
+
 # Installer les dépendances
 RUN echo "=== Installing Dependencies ===" && \
-    composer install --no-dev --no-interaction --no-scripts --prefer-dist 2>&1
+    composer install --no-dev --no-interaction --no-scripts --no-plugins 2>&1 || true
 
-RUN echo "=== Cache Clear ===" && \
-    php bin/console cache:clear --env=prod || true
+RUN echo "=== Checking vendor ===" && \
+    ls -la vendor/ 2>&1 || echo "vendor not found"
 
 # Générer le cache Symfony pour la production
 RUN php bin/console cache:clear --env=prod && \

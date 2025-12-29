@@ -1,14 +1,7 @@
-# Build stage
-FROM php:8.4-fpm-alpine AS builder
+# Build stage - using official Composer image
+FROM composer:2.7 AS builder
 
 WORKDIR /app
-
-# Installer les extensions PHP nécessaires
-RUN apk add --no-cache postgresql-client postgresql-libs libpq-dev curl && \
-    docker-php-ext-install pdo pdo_pgsql
-
-# Télécharger Composer directement
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copier les fichiers du projet Symfony
 COPY symfony/ .
@@ -17,15 +10,28 @@ COPY symfony/ .
 RUN echo "=== Validating composer.json ===" && \
     composer validate --no-check-lock --strict 2>&1
 
-# Installer les dépendances
+# Installer les dépendances avec Composer
 RUN echo "=== Installing Dependencies ===" && \
-    composer install --no-dev --no-interaction --no-scripts --no-plugins 2>&1 || true
+    composer install --no-dev --no-interaction --no-scripts --prefer-dist 2>&1
 
 RUN echo "=== Checking vendor ===" && \
     ls -la vendor/ 2>&1 || echo "vendor not found"
 
+# Prepare stage - warm up Symfony cache
+FROM php:8.4-cli-alpine AS preparer
+
+WORKDIR /app
+
+# Installer les extensions PHP nécessaires
+RUN apk add --no-cache postgresql-client postgresql-libs libpq-dev && \
+    docker-php-ext-install pdo pdo_pgsql
+
+# Copier vendor et code depuis builder
+COPY --from=builder /app .
+
 # Générer le cache Symfony pour la production
-RUN php bin/console cache:clear --env=prod && \
+RUN echo "=== Warming up Symfony cache ===" && \
+    php bin/console cache:clear --env=prod && \
     php bin/console cache:warmup --env=prod || true
 
 # Runtime stage
@@ -42,8 +48,8 @@ RUN apt-get update && \
 # Activer les modules Apache
 RUN a2enmod rewrite headers env
 
-# Copier le code depuis le builder
-COPY --from=builder /app .
+# Copier le code depuis le preparer stage (avec vendor et cache)
+COPY --from=preparer /app .
 
 # Changer le port Apache de 80 à 8080
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf

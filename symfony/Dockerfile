@@ -15,7 +15,8 @@ COPY symfony/ .
 
 # Installer les dépendances et nettoyer le cache
 RUN echo "Installing dependencies..." && \
-    composer config audit.readOnly false && \
+    composer config -g allow-plugins true && \
+    composer config -g audit.block-insecure false && \
     composer update -W --no-dev --optimize-autoloader --no-interaction --no-scripts && \
     echo "Verifying vendor/autoload.php..." && \
     test -f vendor/autoload.php && echo "✅ vendor/autoload.php created" || (echo "❌ FAILURE: vendor/autoload.php not found" && exit 1)

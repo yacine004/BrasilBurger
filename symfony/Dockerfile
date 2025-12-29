@@ -4,21 +4,21 @@ FROM php:8.4-fpm-alpine AS builder
 WORKDIR /app
 
 # Installer les extensions PHP nécessaires
-RUN apk add --no-cache postgresql-client postgresql-libs libpq-dev && \
+RUN apk add --no-cache postgresql-client postgresql-libs libpq-dev curl && \
     docker-php-ext-install pdo pdo_pgsql
 
-# Installer Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Télécharger Composer directement
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copier les fichiers du projet Symfony
 COPY symfony/ .
 
-# Installer les dépendances et nettoyer le cache
-RUN echo "=== Generating Lock File ===" && \
-    composer update --lock --no-dev --no-interaction 2>&1 || composer install --no-dev --no-interaction --no-scripts 2>&1
+# Installer les dépendances
+RUN echo "=== Installing Dependencies ===" && \
+    composer install --no-dev --no-interaction --no-scripts --prefer-dist 2>&1
 
-RUN echo "=== Verification ===" && \
-    ls -la vendor/autoload.php && echo "✅ SUCCESS" || echo "❌ FAILED"
+RUN echo "=== Cache Clear ===" && \
+    php bin/console cache:clear --env=prod || true
 
 # Générer le cache Symfony pour la production
 RUN php bin/console cache:clear --env=prod && \

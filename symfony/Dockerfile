@@ -15,9 +15,9 @@ COPY symfony/ .
 
 # Installer les dépendances et nettoyer le cache
 RUN echo "Installing dependencies..." && \
-    composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-reqs && \
-    echo "Verifying vendor/autoload.php..." && \
-    test -f vendor/autoload.php && echo "✅ vendor/autoload.php created" || (echo "❌ FAILURE: vendor/autoload.php not found" && exit 1)
+    composer diagnose && \
+    composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-reqs -vvv && \
+    echo "✅ Dependencies installed successfully"
 
 # Générer le cache Symfony pour la production
 RUN php bin/console cache:clear --env=prod && \

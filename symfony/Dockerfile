@@ -14,14 +14,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY symfony/ .
 
 # Installer les dépendances et nettoyer le cache
-RUN echo "=== Composer Diagnose ===" && \
-    composer diagnose 2>&1 || true
-
-RUN echo "=== Installing Dependencies ===" && \
-    composer install --no-dev --no-interaction --ignore-platform-reqs 2>&1
+RUN echo "=== Generating Lock File ===" && \
+    composer update --lock --no-dev --no-interaction 2>&1 || composer install --no-dev --no-interaction --no-scripts 2>&1
 
 RUN echo "=== Verification ===" && \
-    ls -la vendor/autoload.php || echo "❌ vendor/autoload.php not found"
+    ls -la vendor/autoload.php && echo "✅ SUCCESS" || echo "❌ FAILED"
 
 # Générer le cache Symfony pour la production
 RUN php bin/console cache:clear --env=prod && \

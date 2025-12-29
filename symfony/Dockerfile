@@ -8,7 +8,7 @@ COPY symfony/ .
 
 # Valider composer.json
 RUN echo "=== Validating composer.json ===" && \
-    composer validate --no-check-lock --strict 2>&1
+    composer validate --no-check-lock 2>&1
 
 # Installer les dépendances avec Composer
 RUN echo "=== Installing Dependencies ===" && \

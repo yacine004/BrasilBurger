@@ -4,28 +4,41 @@ using Microsoft.EntityFrameworkCore;
 using BrasilBurger.Web.Models;
 using BrasilBurger.Web.Data;
 using BrasilBurger.Web.Services;
+using Microsoft.Extensions.Logging;
 
 namespace BrasilBurger.Web.Controllers;
 
 public class HomeController : Controller
 {
     private readonly BrasilBurgerContext _context;
+    private readonly ILogger<HomeController> _logger;
 
-    public HomeController(BrasilBurgerContext context)
+    public HomeController(BrasilBurgerContext context, ILogger<HomeController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<IActionResult> Index()
     {
-        var homeViewModel = new HomeViewModel
+        try
         {
-            BurgersRecents = await _context.Burgers.OrderByDescending(b => b.Id).Take(6).ToListAsync(),
-            MenusRecents = await _context.Menus.OrderByDescending(m => m.Id).Take(3).ToListAsync(),
-            MenusPopulaires = await _context.Menus.OrderByDescending(m => m.Id).Take(3).ToListAsync(),
-            ComplementsPopulaires = await _context.Complements.OrderByDescending(c => c.Id).Take(6).ToListAsync()
-        };
-        return View(homeViewModel);
+            _logger.LogInformation("Tentative d'accès à la page d'accueil");
+            var homeViewModel = new HomeViewModel
+            {
+                BurgersRecents = await _context.Burgers.OrderByDescending(b => b.Id).Take(6).ToListAsync(),
+                MenusRecents = await _context.Menus.OrderByDescending(m => m.Id).Take(3).ToListAsync(),
+                MenusPopulaires = await _context.Menus.OrderByDescending(m => m.Id).Take(3).ToListAsync(),
+                ComplementsPopulaires = await _context.Complements.OrderByDescending(c => c.Id).Take(6).ToListAsync()
+            };
+            _logger.LogInformation($"Burgers récents: {homeViewModel.BurgersRecents.Count}, Menus récents: {homeViewModel.MenusRecents.Count}");
+            return View(homeViewModel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la récupération des données de la page d'accueil");
+            throw;
+        }
     }
 
     public IActionResult Privacy()
@@ -48,7 +61,7 @@ public class HomeController : Controller
             // Charger l'URL du hero depuis la base de données
             var config = await _context.Configurations
                 .FirstOrDefaultAsync(c => c.Cle == "HeroImage");
-            
+
             var heroUrl = config?.Valeur ?? "";
             return Json(new { imageUrl = heroUrl });
         }
@@ -78,7 +91,7 @@ public class HomeController : Controller
             // Sauvegarder l'URL en base de données
             var config = await _context.Configurations
                 .FirstOrDefaultAsync(c => c.Cle == "HeroImage");
-            
+
             if (config == null)
             {
                 config = new Configuration { Cle = "HeroImage", Valeur = imageUrl };
@@ -89,7 +102,7 @@ public class HomeController : Controller
                 config.Valeur = imageUrl;
                 _context.Configurations.Update(config);
             }
-            
+
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, imageUrl });
@@ -108,12 +121,12 @@ public class HomeController : Controller
         {
             var config = await _context.Configurations
                 .FirstOrDefaultAsync(c => c.Cle == "HeroImage");
-            
+
             if (config != null && !string.IsNullOrEmpty(config.Valeur))
             {
                 var cloudinaryService = HttpContext.RequestServices.GetRequiredService<CloudinaryService>();
                 await cloudinaryService.DeleteImageAsync(config.Valeur);
-                
+
                 // Effacer l'URL de la base de données
                 config.Valeur = null;
                 _context.Configurations.Update(config);

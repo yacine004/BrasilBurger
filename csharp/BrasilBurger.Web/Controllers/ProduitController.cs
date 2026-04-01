@@ -3,23 +3,36 @@ using Microsoft.EntityFrameworkCore;
 using BrasilBurger.Web.Data;
 using BrasilBurger.Web.Models;
 using BrasilBurger.Web.Services;
+using Microsoft.Extensions.Logging;
 
 namespace BrasilBurger.Web.Controllers;
 
 public class ProduitController : Controller
 {
     private readonly BrasilBurgerContext _context;
+    private readonly ILogger<ProduitController> _logger;
 
-    public ProduitController(BrasilBurgerContext context)
+    public ProduitController(BrasilBurgerContext context, ILogger<ProduitController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     // Afficher tous les burgers
     public async Task<IActionResult> Burgers()
     {
-        var burgers = await _context.Burgers.ToListAsync();
-        return View(burgers);
+        try
+        {
+            _logger.LogInformation("Tentative d'accès à la liste des burgers");
+            var burgers = await _context.Burgers.ToListAsync();
+            _logger.LogInformation($"Nombre de burgers trouvés: {burgers.Count}");
+            return View(burgers);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erreur lors de la récupération des burgers");
+            throw; // Re-throw pour que l'ExceptionHandler gère l'erreur
+        }
     }
 
     // Afficher tous les menus
